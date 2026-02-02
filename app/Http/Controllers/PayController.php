@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Transaction;
 use App\Services\PaycenterService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
 
 class PayController extends Controller
@@ -15,43 +19,276 @@ class PayController extends Controller
         $this->paycenter = $paycenter;
     }
 
+    /**
+     * Show payment initiation form
+     */
     public function index()
     {
         return Inertia::render('Paycenter/Index');
     }
 
+    /**
+     * Initiate payment and redirect to Paycenter hosted page
+     */
     public function initiate(Request $request)
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:1',
-            'order_id' => 'required|string',
+            'order_id' => 'nullable|string',
+            'description' => 'nullable|string',
+            'email' => 'nullable|email',
+            'phone' => 'nullable|string',
         ]);
 
-        $result = $this->paycenter->initiatePayment($validated);
+        // Generate unique order ID if not provided
+        $clientRef = $validated['order_id'] ?? 'ORD-' . now()->format('YmdHis') . '-' . uniqid();
+
+        // Create transaction record
+        $transaction = Transaction::create([
+            'client_ref' => $clientRef,
+            'amount' => $validated['amount'],
+            'currency' => 'LKR',
+            'status' => 'pending',
+            'user_id' => Auth::id(),
+            'customer_email' => $validated['email'] ?? Auth::user()?->email,
+            'customer_phone' => $validated['phone'] ?? null,
+            'description' => $validated['description'] ?? 'Payment',
+            'initiated_at' => now(),
+            'request_data' => $validated,
+        ]);
+
+        // Prepare payment data
+        $paymentData = [
+            'amount' => $validated['amount'],
+            'currency' => 'LKR',
+            'order_id' => $clientRef,
+            'description' => $validated['description'] ?? 'Payment',
+            'email' => $validated['email'] ?? Auth::user()?->email,
+            'phone' => $validated['phone'] ?? null,
+        ];
+
+        // Call Paycenter API
+        $result = $this->paycenter->initiatePayment($paymentData);
 
         if ($result['status'] === 'success') {
-            // In Inertia, we generally redirect or render a view.
-            // For iframe integration, we'll render a page that contains the iframe.
-            return Inertia::render('Paycenter/Payment', [
-                'paymentUrl' => $result['url'],
+            // Update transaction with reqid
+            $transaction->update([
+                'reqid' => $result['reqid'],
+                'status' => 'processing',
+            ]);
+
+            // IMPORTANT: For Hosted Redirect method, we redirect user to Paycenter's page
+            // They will pay there and Paycenter will redirect back to our callback URL
+            return redirect()->away($result['redirect_url']);
+        }
+
+        // Payment initiation failed
+        $transaction->update([
+            'status' => 'failed',
+            'response_data' => $result,
+        ]);
+
+        return back()->withErrors([
+            'payment' => $result['message'] ?? 'Payment initialization failed. Please try again.'
+        ]);
+    }
+
+    /**
+     * Handle callback from Paycenter after payment
+     * This is where Paycenter redirects the user after payment attempt
+     */
+    public function callback(Request $request)
+    {
+        // Get reqid from query parameters
+        $reqid = $request->input('reqid');
+        
+        Log::info('Paycenter callback received', [
+            'reqid' => $reqid,
+            'all_params' => $request->all()
+        ]);
+
+        if (!$reqid) {
+            return Inertia::render('Paycenter/Result', [
+                'success' => false,
+                'message' => 'Invalid callback data received from payment gateway',
             ]);
         }
 
-        return back()->with('error', 'Payment initialization failed: ' . ($result['message'] ?? 'Unknown error'));
-    }
+        // Find transaction by reqid
+        $transaction = Transaction::where('reqid', $reqid)->first();
 
-    public function callback(Request $request)
-    {
-        $reqid = $request->input('reqid');
-
-        if (!$reqid) {
-            return to_route('pay.index')->with('error', 'Invalid callback data');
+        if (!$transaction) {
+            Log::error('Transaction not found for reqid', ['reqid' => $reqid]);
+            
+            return Inertia::render('Paycenter/Result', [
+                'success' => false,
+                'message' => 'Transaction not found',
+            ]);
         }
 
-        $result = $this->paycenter->verifyPayment($reqid);
+        // Verify payment status with Paycenter
+        $verification = $this->paycenter->verifyPayment($reqid);
+
+        if ($verification['status'] === 'success') {
+            $paymentStatus = $verification['payment_status'] ?? 'UNKNOWN';
+            $transactionId = $verification['transaction_id'];
+
+            // Update transaction based on payment status
+            if (in_array($paymentStatus, ['COMPLETED', 'SUCCESS', 'AUTHORIZED'])) {
+                $transaction->update([
+                    'status' => 'completed',
+                    'payment_state' => $paymentStatus,
+                    'transaction_id' => $transactionId,
+                    'completed_at' => now(),
+                    'response_data' => $verification['data'],
+                ]);
+
+                // Send webhook to client if transaction has client_id
+                if ($transaction->client_id) {
+                    $this->sendWebhook($transaction);
+                }
+
+                // If transaction is from external client (has client_id), redirect to client's return URL
+                if ($transaction->client_id && $transaction->client) {
+                    $returnUrl = $transaction->request_data['return_url'] ?? $transaction->client->return_url;
+                    $redirectUrl = $returnUrl . '?' . http_build_query([
+                        'status' => 'success',
+                        'client_ref' => $transaction->client_ref,
+                        'transaction_id' => $transactionId,
+                        'amount' => $transaction->amount,
+                        'currency' => $transaction->currency,
+                    ]);
+                    
+                    return redirect()->away($redirectUrl);
+                }
+
+                return Inertia::render('Paycenter/Result', [
+                    'success' => true,
+                    'message' => 'Payment completed successfully!',
+                    'transaction' => [
+                        'client_ref' => $transaction->client_ref,
+                        'transaction_id' => $transactionId,
+                        'amount' => $transaction->amount,
+                        'currency' => $transaction->currency,
+                        'status' => $paymentStatus,
+                    ],
+                ]);
+            } elseif (in_array($paymentStatus, ['FAILED', 'DECLINED', 'CANCELLED'])) {
+                $transaction->update([
+                    'status' => 'failed',
+                    'payment_state' => $paymentStatus,
+                    'response_data' => $verification['data'],
+                ]);
+
+                // Send webhook to client
+                if ($transaction->client_id) {
+                    $this->sendWebhook($transaction);
+                }
+
+                // Redirect to client's return URL if external transaction
+                if ($transaction->client_id && $transaction->client) {
+                    $returnUrl = $transaction->request_data['return_url'] ?? $transaction->client->return_url;
+                    $redirectUrl = $returnUrl . '?' . http_build_query([
+                        'status' => 'failed',
+                        'client_ref' => $transaction->client_ref,
+                        'payment_state' => $paymentStatus,
+                    ]);
+                    
+                    return redirect()->away($redirectUrl);
+                }
+
+                return Inertia::render('Paycenter/Result', [
+                    'success' => false,
+                    'message' => 'Payment was ' . strtolower($paymentStatus),
+                    'transaction' => [
+                        'client_ref' => $transaction->client_ref,
+                        'status' => $paymentStatus,
+                    ],
+                ]);
+            } else {
+                // Payment is still pending or in unknown state
+                $transaction->update([
+                    'payment_state' => $paymentStatus,
+                    'response_data' => $verification['data'],
+                ]);
+
+                return Inertia::render('Paycenter/Result', [
+                    'success' => false,
+                    'message' => 'Payment status: ' . $paymentStatus,
+                    'transaction' => [
+                        'client_ref' => $transaction->client_ref,
+                        'status' => $paymentStatus,
+                    ],
+                ]);
+            }
+        }
+
+        // Verification failed
+        Log::error('Payment verification failed', [
+            'reqid' => $reqid,
+            'verification' => $verification
+        ]);
 
         return Inertia::render('Paycenter/Result', [
-            'result' => $result,
+            'success' => false,
+            'message' => 'Failed to verify payment status',
         ]);
+    }
+
+    /**
+     * Show transaction history for authenticated user
+     */
+    public function transactions()
+    {
+        $transactions = Transaction::where('user_id', Auth::id())
+            ->orderBy('created_at', 'desc')
+            ->paginate(20);
+
+        return Inertia::render('Paycenter/Transactions', [
+            'transactions' => $transactions,
+        ]);
+    }
+
+    /**
+     * Send webhook notification to client
+     */
+    protected function sendWebhook(Transaction $transaction): void
+    {
+        if (!$transaction->client || !$transaction->client->webhook_url) {
+            return;
+        }
+
+        try {
+            $payload = [
+                'event' => 'payment.' . $transaction->status,
+                'transaction_id' => $transaction->id,
+                'client_ref' => $transaction->client_ref,
+                'amount' => $transaction->amount,
+                'currency' => $transaction->currency,
+                'status' => $transaction->status,
+                'payment_state' => $transaction->payment_state,
+                'paycenter_transaction_id' => $transaction->transaction_id,
+                'completed_at' => $transaction->completed_at?->toIso8601String(),
+                'metadata' => $transaction->request_data['metadata'] ?? null,
+            ];
+
+            // Generate signature
+            $signature = hash_hmac('sha256', json_encode($payload), $transaction->client->webhook_secret);
+
+            Http::withHeaders([
+                'X-Webhook-Signature' => $signature,
+                'Content-Type' => 'application/json',
+            ])->timeout(10)->post($transaction->client->webhook_url, $payload);
+
+            Log::info('Webhook sent', [
+                'client_id' => $transaction->client_id,
+                'transaction_id' => $transaction->id,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Webhook failed', [
+                'client_id' => $transaction->client_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 }
