@@ -39,7 +39,7 @@ class PaymentApiController extends Controller
         // Validate request
         $validator = Validator::make($request->all(), [
             'amount' => 'required|numeric|min:1',
-            'currency' => 'nullable|string|size:3',
+            'currency' => 'required|in:LKR,USD',
             'order_id' => 'required|string|max:255',
             'description' => 'nullable|string',
             'customer_email' => 'nullable|email',
@@ -65,7 +65,7 @@ class PaymentApiController extends Controller
             'client_id' => $client->id,
             'client_ref' => $clientRef,
             'amount' => $validated['amount'],
-            'currency' => $validated['currency'] ?? 'LKR',
+            'currency' => $validated['currency'],
             'status' => 'pending',
             'customer_email' => $validated['customer_email'] ?? null,
             'customer_phone' => $validated['customer_phone'] ?? null,
@@ -80,7 +80,7 @@ class PaymentApiController extends Controller
         // Prepare payment data
         $paymentData = [
             'amount' => $validated['amount'],
-            'currency' => $validated['currency'] ?? 'LKR',
+            'currency' => $validated['currency'],
             'order_id' => $clientRef,
             'description' => $validated['description'] ?? 'Payment',
             'email' => $validated['customer_email'] ?? null,

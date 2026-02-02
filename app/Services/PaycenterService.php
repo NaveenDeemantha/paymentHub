@@ -7,17 +7,27 @@ use Illuminate\Support\Facades\Log;
 
 class PaycenterService
 {
-    protected string $clientId;
+    protected string $clientIdLkr;
+    protected string $clientIdUsd;
     protected string $authToken;
     protected string $endpoint;
     protected string $hmacSecret;
 
     public function __construct()
     {
-        $this->clientId = config('paycenter.client_id');
+        $this->clientIdLkr = config('paycenter.client_id_lkr');
+        $this->clientIdUsd = config('paycenter.client_id_usd');
         $this->authToken = config('paycenter.auth_token');
         $this->endpoint = config('paycenter.endpoint_url');
         $this->hmacSecret = config('paycenter.hmac_secret');
+    }
+
+    /**
+     * Get the appropriate client ID based on currency
+     */
+    protected function getClientId(string $currency): string
+    {
+        return $currency === 'USD' ? $this->clientIdUsd : $this->clientIdLkr;
     }
 
     /**
@@ -49,17 +59,19 @@ class PaycenterService
     {
         $requestDate = now()->format('Y-m-d\TH:i:s.vO');
         $clientRef = $data['order_id'] ?? 'ORD-' . uniqid();
+        $currency = $data['currency'] ?? 'LKR';
+        $clientId = $this->getClientId($currency);
 
         $payload = [
             'version' => '1.5',
             'operation' => 'PAYMENT_INIT',
             'requestDate' => $requestDate,
             'requestData' => [
-                'clientId' => (int) $this->clientId,
+                'clientId' => (int) $clientId,
                 'transactionType' => 'PURCHASE',
                 'transactionAmount' => [
                     'paymentAmount' => (float) $data['amount'],
-                    'currency' => $data['currency'] ?? 'LKR',
+                    'currency' => $currency,
                 ],
                 'redirect' => [
                     'returnUrl' => route('pay.callback'),
@@ -78,7 +90,7 @@ class PaycenterService
         // Add HMAC signature for security
         if ($this->hmacSecret) {
             $payload['requestData']['clientIdHash'] = $this->generateHmac(
-                (string) $this->clientId,
+                (string) $clientId,
                 $requestDate
             );
         }
@@ -89,7 +101,7 @@ class PaycenterService
             $response = Http::withHeaders([
                 'AUTHTOKEN' => $this->authToken,
                 'Content-Type' => 'application/json',
-            ])->post($this->endpoint . '/paycorp-webservice/InterfaceServlet', $payload);
+            ])->post($this->endpoint, $payload);
 
             Log::info('Paycenter PAYMENT_INIT Response', [
                 'status' => $response->status(),
@@ -142,18 +154,20 @@ class PaycenterService
      * Call this with the reqid from the callback URL
      *
      * @param string $reqid
+     * @param string $currency Currency to determine which client ID to use
      * @return array
      */
-    public function verifyPayment(string $reqid): array
+    public function verifyPayment(string $reqid, string $currency = 'LKR'): array
     {
         $requestDate = now()->format('Y-m-d\TH:i:s.vO');
+        $clientId = $this->getClientId($currency);
 
         $payload = [
             'version' => '1.5',
             'operation' => 'PAYMENT_COMPLETE',
             'requestDate' => $requestDate,
             'requestData' => [
-                'clientId' => (int) $this->clientId,
+                'clientId' => (int) $clientId,
                 'reqid' => $reqid,
             ],
         ];
@@ -161,7 +175,7 @@ class PaycenterService
         // Add HMAC signature
         if ($this->hmacSecret) {
             $payload['requestData']['clientIdHash'] = $this->generateHmac(
-                (string) $this->clientId,
+                (string) $clientId,
                 $requestDate
             );
         }
@@ -172,7 +186,7 @@ class PaycenterService
             $response = Http::withHeaders([
                 'AUTHTOKEN' => $this->authToken,
                 'Content-Type' => 'application/json',
-            ])->post($this->endpoint . '/paycorp-webservice/InterfaceServlet', $payload);
+            ])->post($this->endpoint, $payload);
 
             Log::info('Paycenter PAYMENT_COMPLETE Response', [
                 'status' => $response->status(),

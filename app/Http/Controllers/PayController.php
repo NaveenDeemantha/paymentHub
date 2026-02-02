@@ -34,20 +34,22 @@ class PayController extends Controller
     {
         $validated = $request->validate([
             'amount' => 'required|numeric|min:1',
+            'currency' => 'required|in:LKR,USD',
             'order_id' => 'nullable|string',
             'description' => 'nullable|string',
             'email' => 'nullable|email',
             'phone' => 'nullable|string',
         ]);
 
-        // Generate unique order ID if not provided
-        $clientRef = $validated['order_id'] ?? 'ORD-' . now()->format('YmdHis') . '-' . uniqid();
+        // Generate unique client reference (always unique even if order_id is provided)
+        $orderPrefix = $validated['order_id'] ?? 'ORD';
+        $clientRef = $orderPrefix . '-' . now()->format('YmdHis') . '-' . uniqid();
 
         // Create transaction record
         $transaction = Transaction::create([
             'client_ref' => $clientRef,
             'amount' => $validated['amount'],
-            'currency' => 'LKR',
+            'currency' => $validated['currency'],
             'status' => 'pending',
             'user_id' => Auth::id(),
             'customer_email' => $validated['email'] ?? Auth::user()?->email,
@@ -60,7 +62,7 @@ class PayController extends Controller
         // Prepare payment data
         $paymentData = [
             'amount' => $validated['amount'],
-            'currency' => 'LKR',
+            'currency' => $validated['currency'],
             'order_id' => $clientRef,
             'description' => $validated['description'] ?? 'Payment',
             'email' => $validated['email'] ?? Auth::user()?->email,
@@ -101,7 +103,7 @@ class PayController extends Controller
     {
         // Get reqid from query parameters
         $reqid = $request->input('reqid');
-        
+
         Log::info('Paycenter callback received', [
             'reqid' => $reqid,
             'all_params' => $request->all()
@@ -119,7 +121,7 @@ class PayController extends Controller
 
         if (!$transaction) {
             Log::error('Transaction not found for reqid', ['reqid' => $reqid]);
-            
+
             return Inertia::render('Paycenter/Result', [
                 'success' => false,
                 'message' => 'Transaction not found',
@@ -127,7 +129,7 @@ class PayController extends Controller
         }
 
         // Verify payment status with Paycenter
-        $verification = $this->paycenter->verifyPayment($reqid);
+        $verification = $this->paycenter->verifyPayment($reqid, $transaction->currency);
 
         if ($verification['status'] === 'success') {
             $paymentStatus = $verification['payment_status'] ?? 'UNKNOWN';
@@ -158,7 +160,7 @@ class PayController extends Controller
                         'amount' => $transaction->amount,
                         'currency' => $transaction->currency,
                     ]);
-                    
+
                     return redirect()->away($redirectUrl);
                 }
 
@@ -193,7 +195,7 @@ class PayController extends Controller
                         'client_ref' => $transaction->client_ref,
                         'payment_state' => $paymentStatus,
                     ]);
-                    
+
                     return redirect()->away($redirectUrl);
                 }
 

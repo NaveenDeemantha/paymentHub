@@ -60,7 +60,7 @@ Content-Type: application/json
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | amount | number | Yes | Payment amount |
-| currency | string | No | Currency code (default: LKR) |
+| currency | string | Yes | Currency code: "LKR" or "USD" |
 | order_id | string | Yes | Your unique order reference |
 | description | string | No | Payment description |
 | customer_email | string | No | Customer email |

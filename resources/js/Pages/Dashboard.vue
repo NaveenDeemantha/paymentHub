@@ -21,9 +21,9 @@ defineProps({
         <div class="py-12">
             <div class="mx-auto max-w-7xl sm:px-6 lg:px-8 space-y-6">
                 <!-- Welcome Message -->
-                <div class="overflow-hidden bg-gradient-to-r from-indigo-500 to-purple-600 shadow-sm sm:rounded-lg">
+                <div class="overflow-hidden bg-gradient-to-r shadow-sm sm:rounded-lg">
                     <div class="p-6 text-white">
-                        <h3 class="text-2xl font-bold mb-2">Welcome to Paycenter Gateway</h3>
+                        <h3 class="text-2xl font-bold mb-2">Paycenter Gateway</h3>
                         <p class="text-indigo-100">Centralized payment processing for all your client websites</p>
                     </div>
                 </div>
