@@ -1,0 +1,9 @@
+
+// Paycenter Routes
+use App\Http\Controllers\PayController;
+
+Route::middleware('auth')->group(function () {
+    Route::get('/pay', [PayController::class, 'index'])->name('pay.index');
+    Route::post('/pay/initiate', [PayController::class, 'initiate'])->name('pay.initiate');
+    Route::get('/pay/callback', [PayController::class, 'callback'])->name('pay.callback');
+});
