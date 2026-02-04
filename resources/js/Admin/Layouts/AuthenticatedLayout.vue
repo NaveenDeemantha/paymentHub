@@ -1,38 +1,20 @@
-<script setup>
-import { ref } from 'vue';
-import ApplicationLogo from '@/Admin/Components/ApplicationLogo.vue';
-import Dropdown from '@/Admin/Components/Dropdown.vue';
-import DropdownLink from '@/Admin/Components/DropdownLink.vue';
-import NavLink from '@/Admin/Components/NavLink.vue';
-import ResponsiveNavLink from '@/Admin/Components/ResponsiveNavLink.vue';
-import { Link } from '@inertiajs/vue3';
-
-const showingNavigationDropdown = ref(false);
-</script>
-
 <template>
     <div>
-        <div class="min-h-screen bg-gray-100 dark:bg-gray-900">
-            <nav
-                class="border-b border-gray-100 bg-white dark:border-gray-700 dark:bg-gray-800"
-            >
+        <div class="layout-container">
+            <nav class="navigation-bar">
                 <!-- Primary Navigation Menu -->
-                <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div class="flex h-16 justify-between">
-                        <div class="flex">
+                <div class="nav-wrapper">
+                    <div class="nav-content">
+                        <div class="nav-left">
                             <!-- Logo -->
-                            <div class="flex shrink-0 items-center">
+                            <div class="logo-container">
                                 <Link :href="route('dashboard')">
-                                    <ApplicationLogo
-                                        class="block h-9 w-auto fill-current text-gray-800 dark:text-gray-200"
-                                    />
+                                    <ApplicationLogo class="nav-logo" />
                                 </Link>
                             </div>
 
                             <!-- Navigation Links -->
-                            <div
-                                class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex"
-                            >
+                            <div class="nav-links">
                                 <NavLink
                                     :href="route('dashboard')"
                                     :active="route().current('dashboard')"
@@ -54,20 +36,20 @@ const showingNavigationDropdown = ref(false);
                             </div>
                         </div>
 
-                        <div class="hidden sm:ms-6 sm:flex sm:items-center">
+                        <div class="nav-right">
                             <!-- Settings Dropdown -->
-                            <div class="relative ms-3">
+                            <div class="settings-dropdown">
                                 <Dropdown align="right" width="48">
                                     <template #trigger>
-                                        <span class="inline-flex rounded-md">
+                                        <span class="trigger-span">
                                             <button
                                                 type="button"
-                                                class="inline-flex items-center rounded-md border border-transparent bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-500 transition duration-150 ease-in-out hover:text-gray-700 focus:outline-none dark:bg-gray-800 dark:text-gray-400 dark:hover:text-gray-300"
+                                                class="trigger-button"
                                             >
                                                 {{ $page.props.auth.user.name }}
 
                                                 <svg
-                                                    class="-me-0.5 ms-2 h-4 w-4"
+                                                    class="trigger-icon"
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     viewBox="0 0 20 20"
                                                     fill="currentColor"
@@ -83,9 +65,7 @@ const showingNavigationDropdown = ref(false);
                                     </template>
 
                                     <template #content>
-                                        <DropdownLink
-                                            :href="route('profile.edit')"
-                                        >
+                                        <DropdownLink :href="route('profile.edit')">
                                             Profile
                                         </DropdownLink>
                                         <DropdownLink
@@ -101,16 +81,13 @@ const showingNavigationDropdown = ref(false);
                         </div>
 
                         <!-- Hamburger -->
-                        <div class="-me-2 flex items-center sm:hidden">
+                        <div class="hamburger-container">
                             <button
-                                @click="
-                                    showingNavigationDropdown =
-                                        !showingNavigationDropdown
-                                "
-                                class="inline-flex items-center justify-center rounded-md p-2 text-gray-400 transition duration-150 ease-in-out hover:bg-gray-100 hover:text-gray-500 focus:bg-gray-100 focus:text-gray-500 focus:outline-none dark:text-gray-500 dark:hover:bg-gray-900 dark:hover:text-gray-400 dark:focus:bg-gray-900 dark:focus:text-gray-400"
+                                @click="showingNavigationDropdown = !showingNavigationDropdown"
+                                class="hamburger-button"
                             >
                                 <svg
-                                    class="h-6 w-6"
+                                    class="hamburger-icon"
                                     stroke="currentColor"
                                     fill="none"
                                     viewBox="0 0 24 24"
@@ -118,8 +95,7 @@ const showingNavigationDropdown = ref(false);
                                     <path
                                         :class="{
                                             hidden: showingNavigationDropdown,
-                                            'inline-flex':
-                                                !showingNavigationDropdown,
+                                            'inline-flex': !showingNavigationDropdown,
                                         }"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
@@ -129,8 +105,7 @@ const showingNavigationDropdown = ref(false);
                                     <path
                                         :class="{
                                             hidden: !showingNavigationDropdown,
-                                            'inline-flex':
-                                                showingNavigationDropdown,
+                                            'inline-flex': showingNavigationDropdown,
                                         }"
                                         stroke-linecap="round"
                                         stroke-linejoin="round"
@@ -149,9 +124,9 @@ const showingNavigationDropdown = ref(false);
                         block: showingNavigationDropdown,
                         hidden: !showingNavigationDropdown,
                     }"
-                    class="sm:hidden"
+                    class="responsive-menu"
                 >
-                    <div class="space-y-1 pb-3 pt-2">
+                    <div class="responsive-links">
                         <ResponsiveNavLink
                             :href="route('dashboard')"
                             :active="route().current('dashboard')"
@@ -173,21 +148,17 @@ const showingNavigationDropdown = ref(false);
                     </div>
 
                     <!-- Responsive Settings Options -->
-                    <div
-                        class="border-t border-gray-200 pb-1 pt-4 dark:border-gray-600"
-                    >
-                        <div class="px-4">
-                            <div
-                                class="text-base font-medium text-gray-800 dark:text-gray-200"
-                            >
+                    <div class="responsive-settings">
+                        <div class="user-info">
+                            <div class="user-name">
                                 {{ $page.props.auth.user.name }}
                             </div>
-                            <div class="text-sm font-medium text-gray-500">
+                            <div class="user-email">
                                 {{ $page.props.auth.user.email }}
                             </div>
                         </div>
 
-                        <div class="mt-3 space-y-1">
+                        <div class="settings-links">
                             <ResponsiveNavLink :href="route('profile.edit')">
                                 Profile
                             </ResponsiveNavLink>
@@ -204,11 +175,8 @@ const showingNavigationDropdown = ref(false);
             </nav>
 
             <!-- Page Heading -->
-            <header
-                class="bg-white shadow dark:bg-gray-800"
-                v-if="$slots.header"
-            >
-                <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
+            <header class="page-header" v-if="$slots.header">
+                <div class="header-content">
                     <slot name="header" />
                 </div>
             </header>
@@ -220,3 +188,322 @@ const showingNavigationDropdown = ref(false);
         </div>
     </div>
 </template>
+
+<script setup>
+import { ref } from 'vue';
+import ApplicationLogo from '@/Admin/Components/ApplicationLogo.vue';
+import Dropdown from '@/Admin/Components/Dropdown.vue';
+import DropdownLink from '@/Admin/Components/DropdownLink.vue';
+import NavLink from '@/Admin/Components/NavLink.vue';
+import ResponsiveNavLink from '@/Admin/Components/ResponsiveNavLink.vue';
+import { Link } from '@inertiajs/vue3';
+
+const showingNavigationDropdown = ref(false);
+</script>
+
+<style scoped>
+.layout-container {
+    min-height: 100vh;
+    background-color: #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+    .layout-container {
+        background-color: #111827;
+    }
+}
+
+.navigation-bar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+@media (prefers-color-scheme: dark) {
+    .navigation-bar {
+        background-color: #1f2937;
+        border-color: #374151;
+    }
+}
+
+.nav-wrapper {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+    .nav-wrapper {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .nav-wrapper {
+        padding: 0 2rem;
+    }
+}
+
+.nav-content {
+    display: flex;
+    justify-content: space-between;
+    height: 4rem;
+}
+
+.nav-left {
+    display: flex;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.nav-logo {
+    display: block;
+    height: 2.25rem;
+    width: auto;
+    fill: currentColor;
+    color: #1f2937;
+}
+
+@media (prefers-color-scheme: dark) {
+    .nav-logo {
+        color: #e5e7eb;
+    }
+}
+
+.nav-links {
+    display: none;
+    margin-left: 2.5rem;
+}
+
+@media (min-width: 640px) {
+    .nav-links {
+        display: flex;
+        gap: 2rem;
+        margin-top: -1px;
+        margin-bottom: -1px;
+    }
+}
+
+.nav-right {
+    display: none;
+}
+
+@media (min-width: 640px) {
+    .nav-right {
+        display: flex;
+        align-items: center;
+        margin-left: 1.5rem;
+    }
+}
+
+.settings-dropdown {
+    position: relative;
+    margin-left: 0.75rem;
+}
+
+.trigger-span {
+    display: inline-flex;
+    border-radius: 0.375rem;
+}
+
+.trigger-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.5rem 0.75rem;
+    border: 1px solid transparent;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    color: #6b7280;
+    background-color: #ffffff;
+    border-radius: 0.375rem;
+    transition: color 0.15s ease-in-out;
+    cursor: pointer;
+}
+
+.trigger-button:hover {
+    color: #374151;
+}
+
+.trigger-button:focus {
+    outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .trigger-button {
+        background-color: #1f2937;
+        color: #9ca3af;
+        border-color: transparent;
+    }
+    .trigger-button:hover {
+        color: #d1d5db;
+    }
+}
+
+.trigger-icon {
+    margin-left: 0.5rem;
+    margin-right: -0.125rem;
+    height: 1rem;
+    width: 1rem;
+}
+
+.hamburger-container {
+    display: flex;
+    align-items: center;
+    margin-right: -0.5rem;
+}
+
+@media (min-width: 640px) {
+    .hamburger-container {
+        display: none;
+    }
+}
+
+.hamburger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem;
+    border-radius: 0.375rem;
+    color: #9ca3af;
+    transition: background-color 0.15s, color 0.15s;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.hamburger-button:hover {
+    background-color: #f3f4f6;
+    color: #6b7280;
+}
+
+.hamburger-button:focus {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .hamburger-button {
+        color: #6b7280;
+    }
+    .hamburger-button:hover {
+        background-color: #111827;
+        color: #9ca3af;
+    }
+    .hamburger-button:focus {
+        background-color: #111827;
+        color: #9ca3af;
+    }
+}
+
+.hamburger-icon {
+    height: 1.5rem;
+    width: 1.5rem;
+}
+
+.hidden {
+    display: none;
+}
+
+.inline-flex {
+    display: inline-flex;
+}
+
+.block {
+    display: block;
+}
+
+.responsive-menu {
+    display: none; /* Controlled by v-bind class in template but need baseline */
+}
+
+@media (max-width: 639px) {
+    .responsive-menu.block {
+        display: block;
+    }
+}
+
+.responsive-links {
+    padding-top: 0.5rem;
+    padding-bottom: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.responsive-settings {
+    padding-top: 1rem;
+    padding-bottom: 0.25rem;
+    border-top: 1px solid #e5e7eb;
+}
+
+@media (prefers-color-scheme: dark) {
+    .responsive-settings {
+        border-color: #4b5563;
+    }
+}
+
+.user-info {
+    padding: 0 1rem;
+}
+
+.user-name {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1f2937;
+}
+
+@media (prefers-color-scheme: dark) {
+    .user-name {
+        color: #e5e7eb;
+    }
+}
+
+.user-email {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.settings-links {
+    margin-top: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.page-header {
+    background-color: #ffffff;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+
+@media (prefers-color-scheme: dark) {
+    .page-header {
+        background-color: #1f2937;
+    }
+}
+
+.header-content {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 1.5rem 1rem;
+}
+
+@media (min-width: 640px) {
+    .header-content {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .header-content {
+        padding-left: 2rem;
+        padding-right: 2rem;
+    }
+}
+</style>

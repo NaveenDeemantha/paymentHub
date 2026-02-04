@@ -1,3 +1,32 @@
+<template>
+    <Head title="Redirecting to Payment..." />
+
+    <AuthenticatedLayout>
+        <template #header>
+            <h2 class="page-title">
+                Redirecting to Payment Gateway
+            </h2>
+        </template>
+
+        <div class="main-content">
+            <div class="content-wrapper">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="spinner-wrapper">
+                            <svg class="spinner" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="spinner-track" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="spinner-fill" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                        </div>
+                        <p class="message-primary">Redirecting to Paycenter's secure payment page...</p>
+                        <p class="message-secondary">Please wait...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </AuthenticatedLayout>
+</template>
+
 <script setup>
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout.vue';
 import { Head } from '@inertiajs/vue3';
@@ -11,31 +40,111 @@ defineProps({
 });
 </script>
 
-<template>
-    <Head title="Redirecting to Payment..." />
+<style scoped>
+.page-title {
+    font-weight: 600;
+    font-size: 1.25rem;
+    color: #1f2937;
+    line-height: 1.75rem;
+}
 
-    <AuthenticatedLayout>
-        <template #header>
-            <h2 class="font-semibold text-xl text-gray-800 dark:text-gray-200 leading-tight">
-                Redirecting to Payment Gateway
-            </h2>
-        </template>
+.main-content {
+    padding: 3rem 0;
+}
 
-        <div class="py-12">
-            <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-                <div class="bg-white dark:bg-gray-800 overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6 text-gray-900 dark:text-gray-100 text-center">
-                        <div class="mb-4">
-                            <svg class="animate-spin h-12 w-12 mx-auto text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
-                        </div>
-                        <p class="text-lg font-medium">Redirecting to Paycenter's secure payment page...</p>
-                        <p class="text-sm text-gray-600 dark:text-gray-400 mt-2">Please wait...</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </AuthenticatedLayout>
-</template>
+.content-wrapper {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+@media (min-width: 640px) {
+    .content-wrapper {
+        padding: 0 1.5rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .content-wrapper {
+        padding: 0 2rem;
+    }
+}
+
+.card {
+    background-color: #ffffff;
+    overflow: hidden;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    border-radius: 0.5rem;
+}
+
+@media (min-width: 640px) {
+    .card {
+        border-radius: 0.5rem;
+    }
+}
+
+.card-body {
+    padding: 1.5rem;
+    color: #111827;
+    text-align: center;
+}
+
+.spinner-wrapper {
+    margin-bottom: 1rem;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+    height: 3rem;
+    width: 3rem;
+    margin: 0 auto;
+    color: #4f46e5;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.spinner-track {
+    opacity: 0.25;
+}
+
+.spinner-fill {
+    opacity: 0.75;
+}
+
+.message-primary {
+    font-size: 1.125rem;
+    font-weight: 500;
+}
+
+.message-secondary {
+    font-size: 0.875rem;
+    color: #4b5563;
+    margin-top: 0.5rem;
+}
+
+/* Dark mode support (if AuthenticatedLayout provides it) */
+@media (prefers-color-scheme: dark) {
+    .page-title {
+        color: #e5e7eb;
+    }
+    
+    .card {
+        background-color: #1f2937;
+    }
+    
+    .card-body {
+        color: #f3f4f6;
+    }
+    
+    .message-secondary {
+        color: #9ca3af;
+    }
+}
+</style>

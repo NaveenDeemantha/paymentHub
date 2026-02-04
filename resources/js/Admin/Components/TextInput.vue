@@ -1,3 +1,11 @@
+<template>
+    <input
+        class="form-input"
+        v-model="model"
+        ref="input"
+    />
+</template>
+
 <script setup>
 import { onMounted, ref } from 'vue';
 
@@ -17,10 +25,31 @@ onMounted(() => {
 defineExpose({ focus: () => input.value.focus() });
 </script>
 
-<template>
-    <input
-        class="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:focus:border-indigo-600 dark:focus:ring-indigo-600"
-        v-model="model"
-        ref="input"
-    />
-</template>
+<style scoped>
+.form-input {
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    padding: 0.5rem 0.75rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+
+.form-input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 1px #6366f1;
+    outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .form-input {
+        background-color: #111827;
+        border-color: #374151;
+        color: #d1d5db;
+    }
+    .form-input:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 1px #4f46e5;
+    }
+}
+</style>

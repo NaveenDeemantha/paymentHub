@@ -1,3 +1,71 @@
+<template>
+    <GuestLayout>
+        <Head title="Log in" />
+
+        <div v-if="status" class="status-message">
+            {{ status }}
+        </div>
+
+        <form @submit.prevent="submit" class="form-container">
+            <div class="form-group">
+                <InputLabel for="email" value="Email" />
+
+                <TextInput
+                    id="email"
+                    type="email"
+                    class="form-input"
+                    v-model="form.email"
+                    required
+                    autofocus
+                    autocomplete="username"
+                />
+
+                <InputError class="form-error" :message="form.errors.email" />
+            </div>
+
+            <div class="form-group">
+                <InputLabel for="password" value="Password" />
+
+                <TextInput
+                    id="password"
+                    type="password"
+                    class="form-input"
+                    v-model="form.password"
+                    required
+                    autocomplete="current-password"
+                />
+
+                <InputError class="form-error" :message="form.errors.password" />
+            </div>
+
+            <div class="remember-me">
+                <label class="checkbox-label">
+                    <Checkbox name="remember" v-model:checked="form.remember" />
+                    <span class="remember-text">Remember me</span>
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <Link
+                    v-if="canResetPassword"
+                    :href="route('password.request')"
+                    class="forgot-password"
+                >
+                    Forgot your password?
+                </Link>
+
+                <PrimaryButton
+                    class="login-button"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
+                    Log in
+                </PrimaryButton>
+            </div>
+        </form>
+    </GuestLayout>
+</template>
+
 <script setup>
 import Checkbox from '@/Admin/Components/Checkbox.vue';
 import GuestLayout from '@/Admin/Layouts/GuestLayout.vue';
@@ -29,72 +97,104 @@ const submit = () => {
 };
 </script>
 
-<template>
-    <GuestLayout>
-        <Head title="Log in" />
+<style scoped>
+.status-message {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #16a34a;
+}
 
-        <div v-if="status" class="mb-4 text-sm font-medium text-green-600">
-            {{ status }}
-        </div>
+@media (prefers-color-scheme: dark) {
+    .status-message {
+        color: #4ade80;
+    }
+}
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+.form-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
 
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+.form-input {
+    margin-top: 0.25rem;
+    display: block;
+    width: 100%;
+}
 
-            <div class="mt-4">
-                <InputLabel for="password" value="Password" />
+.form-error {
+    margin-top: 0.5rem;
+}
 
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                />
+.remember-me {
+    display: block;
+    margin-top: 1rem;
+}
 
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+.checkbox-label {
+    display: flex;
+    align-items: center;
+}
 
-            <div class="mt-4 block">
-                <label class="flex items-center">
-                    <Checkbox name="remember" v-model:checked="form.remember" />
-                    <span class="ms-2 text-sm text-gray-600 dark:text-gray-400"
-                        >Remember me</span
-                    >
-                </label>
-            </div>
+.remember-text {
+    margin-left: 0.5rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
 
-            <div class="mt-4 flex items-center justify-end">
-                <Link
-                    v-if="canResetPassword"
-                    :href="route('password.request')"
-                    class="rounded-md text-sm text-gray-600 underline hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:text-gray-400 dark:hover:text-gray-100 dark:focus:ring-offset-gray-800"
-                >
-                    Forgot your password?
-                </Link>
+@media (prefers-color-scheme: dark) {
+    .remember-text {
+        color: #9ca3af;
+    }
+}
 
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Log in
-                </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
-</template>
+.form-actions {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.forgot-password {
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+    text-decoration: underline;
+    transition: color 0.15s;
+}
+
+.forgot-password:hover {
+    color: #111827;
+}
+
+.forgot-password:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #4f46e5;
+}
+
+@media (prefers-color-scheme: dark) {
+    .forgot-password {
+        color: #9ca3af;
+    }
+    .forgot-password:hover {
+        color: #f3f4f6;
+    }
+    .forgot-password:focus {
+        box-shadow: 0 0 0 2px #1f2937, 0 0 0 4px #6366f1;
+    }
+}
+
+.login-button {
+    margin-left: 1rem;
+}
+
+.opacity-25 {
+    opacity: 0.25;
+}
+</style>

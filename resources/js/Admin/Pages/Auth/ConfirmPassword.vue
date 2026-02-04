@@ -1,3 +1,40 @@
+<template>
+    <GuestLayout>
+        <Head title="Confirm Password" />
+
+        <div class="info-text">
+            This is a secure area of the application. Please confirm your
+            password before continuing.
+        </div>
+
+        <form @submit.prevent="submit">
+            <div class="form-group">
+                <InputLabel for="password" value="Password" />
+                <TextInput
+                    id="password"
+                    type="password"
+                    class="form-input"
+                    v-model="form.password"
+                    required
+                    autocomplete="current-password"
+                    autofocus
+                />
+                <InputError class="form-error" :message="form.errors.password" />
+            </div>
+
+            <div class="form-actions">
+                <PrimaryButton
+                    class="start-button"
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
+                    Confirm
+                </PrimaryButton>
+            </div>
+        </form>
+    </GuestLayout>
+</template>
+
 <script setup>
 import GuestLayout from '@/Admin/Layouts/GuestLayout.vue';
 import InputError from '@/Admin/Components/InputError.vue';
@@ -17,39 +54,44 @@ const submit = () => {
 };
 </script>
 
-<template>
-    <GuestLayout>
-        <Head title="Confirm Password" />
+<style scoped>
+.info-text {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            This is a secure area of the application. Please confirm your
-            password before continuing.
-        </div>
+@media (prefers-color-scheme: dark) {
+    .info-text {
+        color: #9ca3af;
+    }
+}
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="password" value="Password" />
-                <TextInput
-                    id="password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    v-model="form.password"
-                    required
-                    autocomplete="current-password"
-                    autofocus
-                />
-                <InputError class="mt-2" :message="form.errors.password" />
-            </div>
+.form-group {
+    margin-top: 1rem;
+}
 
-            <div class="mt-4 flex justify-end">
-                <PrimaryButton
-                    class="ms-4"
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Confirm
-                </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
-</template>
+.form-input {
+    margin-top: 0.25rem;
+    display: block;
+    width: 100%;
+}
+
+.form-error {
+    margin-top: 0.5rem;
+}
+
+.form-actions {
+    margin-top: 1rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.start-button {
+    margin-left: 1rem;
+}
+
+.opacity-25 {
+    opacity: 0.25;
+}
+</style>

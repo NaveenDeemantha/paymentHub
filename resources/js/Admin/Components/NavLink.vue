@@ -1,3 +1,9 @@
+<template>
+    <Link :href="href" :class="classes">
+        <slot />
+    </Link>
+</template>
+
 <script setup>
 import { computed } from 'vue';
 import { Link } from '@inertiajs/vue3';
@@ -14,13 +20,71 @@ const props = defineProps({
 
 const classes = computed(() =>
     props.active
-        ? 'inline-flex items-center px-1 pt-1 border-b-2 border-indigo-400 dark:border-indigo-600 text-sm font-medium leading-5 text-gray-900 dark:text-gray-100 focus:outline-none focus:border-indigo-700 transition duration-150 ease-in-out'
-        : 'inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-700 focus:outline-none focus:text-gray-700 dark:focus:text-gray-300 focus:border-gray-300 dark:focus:border-gray-700 transition duration-150 ease-in-out',
+        ? 'nav-link active'
+        : 'nav-link inactive',
 );
 </script>
 
-<template>
-    <Link :href="href" :class="classes">
-        <slot />
-    </Link>
-</template>
+<style scoped>
+.nav-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0 0.25rem;
+    padding-top: 0.25rem;
+    border-bottom-width: 2px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    line-height: 1.25rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.nav-link:focus {
+    outline: none;
+}
+
+.active {
+    border-color: #818cf8;
+    color: #111827;
+}
+
+.active:focus {
+    border-color: #4338ca;
+}
+
+.inactive {
+    border-color: transparent;
+    color: #6b7280;
+}
+
+.inactive:hover {
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+.inactive:focus {
+    color: #374151;
+    border-color: #d1d5db;
+}
+
+@media (prefers-color-scheme: dark) {
+    .active {
+        border-color: #4f46e5;
+        color: #f3f4f6;
+    }
+    .active:focus {
+        border-color: #6366f1;
+    }
+
+    .inactive {
+        color: #9ca3af;
+    }
+    .inactive:hover {
+        color: #d1d5db;
+        border-color: #374151;
+    }
+    .inactive:focus {
+        color: #d1d5db;
+        border-color: #374151;
+    }
+}
+</style>

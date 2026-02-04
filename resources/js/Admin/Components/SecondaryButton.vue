@@ -1,3 +1,12 @@
+<template>
+    <button
+        :type="type"
+        class="secondary-btn"
+    >
+        <slot />
+    </button>
+</template>
+
 <script setup>
 defineProps({
     type: {
@@ -7,11 +16,47 @@ defineProps({
 });
 </script>
 
-<template>
-    <button
-        :type="type"
-        class="inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-xs font-semibold uppercase tracking-widest text-gray-700 shadow-sm transition duration-150 ease-in-out hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 dark:border-gray-500 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700 dark:focus:ring-offset-gray-800"
-    >
-        <slot />
-    </button>
-</template>
+<style scoped>
+.secondary-btn {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 0.375rem;
+    border: 1px solid #d1d5db;
+    background-color: #ffffff;
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #374151;
+    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    transition: background-color 0.15s ease-in-out, opacity 0.15s ease-in-out;
+}
+
+.secondary-btn:hover {
+    background-color: #f9fafb;
+}
+
+.secondary-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #6366f1;
+}
+
+.secondary-btn:disabled {
+    opacity: 0.25;
+}
+
+@media (prefers-color-scheme: dark) {
+    .secondary-btn {
+        border-color: #6b7280;
+        background-color: #1f2937;
+        color: #d1d5db;
+    }
+    .secondary-btn:hover {
+        background-color: #374151;
+    }
+    .secondary-btn:focus {
+        box-shadow: 0 0 0 2px #1f2937, 0 0 0 4px #4b5563;
+    }
+}
+</style>

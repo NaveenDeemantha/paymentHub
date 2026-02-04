@@ -1,3 +1,91 @@
+<template>
+    <section>
+        <header>
+            <h2 class="section-title">
+                Update Password
+            </h2>
+
+            <p class="section-description">
+                Ensure your account is using a long, random password to stay
+                secure.
+            </p>
+        </header>
+
+        <form @submit.prevent="updatePassword" class="form-container">
+            <div>
+                <InputLabel for="current_password" value="Current Password" />
+
+                <TextInput
+                    id="current_password"
+                    ref="currentPasswordInput"
+                    v-model="form.current_password"
+                    type="password"
+                    class="form-input"
+                    autocomplete="current-password"
+                />
+
+                <InputError
+                    :message="form.errors.current_password"
+                    class="form-error"
+                />
+            </div>
+
+            <div>
+                <InputLabel for="password" value="New Password" />
+
+                <TextInput
+                    id="password"
+                    ref="passwordInput"
+                    v-model="form.password"
+                    type="password"
+                    class="form-input"
+                    autocomplete="new-password"
+                />
+
+                <InputError :message="form.errors.password" class="form-error" />
+            </div>
+
+            <div>
+                <InputLabel
+                    for="password_confirmation"
+                    value="Confirm Password"
+                />
+
+                <TextInput
+                    id="password_confirmation"
+                    v-model="form.password_confirmation"
+                    type="password"
+                    class="form-input"
+                    autocomplete="new-password"
+                />
+
+                <InputError
+                    :message="form.errors.password_confirmation"
+                    class="form-error"
+                />
+            </div>
+
+            <div class="form-actions">
+                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+
+                <Transition
+                    enter-active-class="transition ease-in-out"
+                    enter-from-class="opacity-0"
+                    leave-active-class="transition ease-in-out"
+                    leave-to-class="opacity-0"
+                >
+                    <p
+                        v-if="form.recentlySuccessful"
+                        class="success-message"
+                    >
+                        Saved.
+                    </p>
+                </Transition>
+            </div>
+        </form>
+    </section>
+</template>
+
 <script setup>
 import InputError from '@/Admin/Components/InputError.vue';
 import InputLabel from '@/Admin/Components/InputLabel.vue';
@@ -33,90 +121,76 @@ const updatePassword = () => {
 };
 </script>
 
-<template>
-    <section>
-        <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Update Password
-            </h2>
+<style scoped>
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #111827;
+}
 
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Ensure your account is using a long, random password to stay
-                secure.
-            </p>
-        </header>
+@media (prefers-color-scheme: dark) {
+    .section-title {
+        color: #f3f4f6;
+    }
+}
 
-        <form @submit.prevent="updatePassword" class="mt-6 space-y-6">
-            <div>
-                <InputLabel for="current_password" value="Current Password" />
+.section-description {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
 
-                <TextInput
-                    id="current_password"
-                    ref="currentPasswordInput"
-                    v-model="form.current_password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="current-password"
-                />
+@media (prefers-color-scheme: dark) {
+    .section-description {
+        color: #9ca3af;
+    }
+}
 
-                <InputError
-                    :message="form.errors.current_password"
-                    class="mt-2"
-                />
-            </div>
+.form-container {
+    margin-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
 
-            <div>
-                <InputLabel for="password" value="New Password" />
+.form-input {
+    margin-top: 0.25rem;
+    display: block;
+    width: 100%;
+}
 
-                <TextInput
-                    id="password"
-                    ref="passwordInput"
-                    v-model="form.password"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                />
+.form-error {
+    margin-top: 0.5rem;
+}
 
-                <InputError :message="form.errors.password" class="mt-2" />
-            </div>
+.form-actions {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
 
-            <div>
-                <InputLabel
-                    for="password_confirmation"
-                    value="Confirm Password"
-                />
+.transition {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
 
-                <TextInput
-                    id="password_confirmation"
-                    v-model="form.password_confirmation"
-                    type="password"
-                    class="mt-1 block w-full"
-                    autocomplete="new-password"
-                />
+.ease-in-out {
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
 
-                <InputError
-                    :message="form.errors.password_confirmation"
-                    class="mt-2"
-                />
-            </div>
+.opacity-0 {
+    opacity: 0;
+}
 
-            <div class="flex items-center gap-4">
-                <PrimaryButton :disabled="form.processing">Save</PrimaryButton>
+.success-message {
+    font-size: 0.875rem;
+    color: #4b5563;
+}
 
-                <Transition
-                    enter-active-class="transition ease-in-out"
-                    enter-from-class="opacity-0"
-                    leave-active-class="transition ease-in-out"
-                    leave-to-class="opacity-0"
-                >
-                    <p
-                        v-if="form.recentlySuccessful"
-                        class="text-sm text-gray-600 dark:text-gray-400"
-                    >
-                        Saved.
-                    </p>
-                </Transition>
-            </div>
-        </form>
-    </section>
-</template>
+@media (prefers-color-scheme: dark) {
+    .success-message {
+        color: #9ca3af;
+    }
+}
+</style>

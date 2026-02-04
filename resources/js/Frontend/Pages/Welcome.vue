@@ -19,31 +19,27 @@ defineProps({
 });
 
 function handleImageError() {
-    document.getElementById('screenshot-container')?.classList.add('!hidden');
-    document.getElementById('docs-card')?.classList.add('!row-span-1');
-    document.getElementById('docs-card-content')?.classList.add('!flex-row');
-    document.getElementById('background')?.classList.add('!hidden');
+    document.getElementById('screenshot-container')?.classList.add('hidden');
+    document.getElementById('docs-card')?.classList.add('row-span-1');
+    document.getElementById('docs-card-content')?.classList.add('flex-row');
+    document.getElementById('background')?.classList.add('hidden');
 }
 </script>
 
 <template>
     <Head title="Welcome" />
-    <div class="bg-gray-50 text-black/50 dark:bg-black dark:text-white/50">
+    <div class="page-container">
         <img
             id="background"
-            class="absolute -left-20 top-0 max-w-[877px]"
+            class="background-image"
             src="https://laravel.com/assets/img/welcome/background.svg"
         />
-        <div
-            class="relative flex min-h-screen flex-col items-center justify-center selection:bg-[#FF2D20] selection:text-white"
-        >
-            <div class="relative w-full max-w-2xl px-6 lg:max-w-7xl">
-                <header
-                    class="grid grid-cols-2 items-center gap-2 py-10 lg:grid-cols-3"
-                >
-                    <div class="flex lg:col-start-2 lg:justify-center">
+        <div class="content-wrapper">
+            <div class="content-container">
+                <header class="header">
+                    <div class="logo-container">
                         <svg
-                            class="h-12 w-auto text-white lg:h-16 lg:text-[#FF2D20]"
+                            class="laravel-logo"
                             viewBox="0 0 62 65"
                             fill="none"
                             xmlns="http://www.w3.org/2000/svg"
@@ -54,11 +50,11 @@ function handleImageError() {
                             />
                         </svg>
                     </div>
-                    <nav v-if="canLogin" class="-mx-3 flex flex-1 justify-end">
+                    <nav v-if="canLogin" class="nav-menu">
                         <Link
                             v-if="$page.props.auth.user"
                             :href="route('dashboard')"
-                            class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                            class="nav-link"
                         >
                             Dashboard
                         </Link>
@@ -66,7 +62,7 @@ function handleImageError() {
                         <template v-else>
                             <Link
                                 :href="route('login')"
-                                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                class="nav-link"
                             >
                                 Log in
                             </Link>
@@ -74,7 +70,7 @@ function handleImageError() {
                             <Link
                                 v-if="canRegister"
                                 :href="route('register')"
-                                class="rounded-md px-3 py-2 text-black ring-1 ring-transparent transition hover:text-black/70 focus:outline-none focus-visible:ring-[#FF2D20] dark:text-white dark:hover:text-white/80 dark:focus-visible:ring-white"
+                                class="nav-link"
                             >
                                 Register
                             </Link>
@@ -82,45 +78,39 @@ function handleImageError() {
                     </nav>
                 </header>
 
-                <main class="mt-6">
-                    <div class="grid gap-6 lg:grid-cols-2 lg:gap-8">
+                <main class="main-content">
+                    <div class="cards-grid">
                         <a
                             href="https://laravel.com/docs"
                             id="docs-card"
-                            class="flex flex-col items-start gap-6 overflow-hidden rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] md:row-span-3 lg:p-10 lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
+                            class="card docs-card"
                         >
                             <div
                                 id="screenshot-container"
-                                class="relative flex w-full flex-1 items-stretch"
+                                class="screenshot-container"
                             >
                                 <img
                                     src="https://laravel.com/assets/img/welcome/docs-light.svg"
                                     alt="Laravel documentation screenshot"
-                                    class="aspect-video h-full w-full flex-1 rounded-[10px] object-cover object-top drop-shadow-[0px_4px_34px_rgba(0,0,0,0.06)] dark:hidden"
+                                    class="screenshot light-mode"
                                     @error="handleImageError"
                                 />
                                 <img
                                     src="https://laravel.com/assets/img/welcome/docs-dark.svg"
                                     alt="Laravel documentation screenshot"
-                                    class="hidden aspect-video h-full w-full flex-1 rounded-[10px] object-cover object-top drop-shadow-[0px_4px_34px_rgba(0,0,0,0.25)] dark:block"
+                                    class="screenshot dark-mode"
                                 />
-                                <div
-                                    class="absolute -bottom-16 -left-16 h-40 w-[calc(100%+8rem)] bg-gradient-to-b from-transparent via-white to-white dark:via-zinc-900 dark:to-zinc-900"
-                                ></div>
+                                <div class="gradient-overlay"></div>
                             </div>
 
-                            <div
-                                class="relative flex items-center gap-6 lg:items-end"
-                            >
+                            <div class="card-content-wrapper">
                                 <div
                                     id="docs-card-content"
-                                    class="flex items-start gap-6 lg:flex-col"
+                                    class="card-inner-content"
                                 >
-                                    <div
-                                        class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                                    >
+                                    <div class="icon-circle">
                                         <svg
-                                            class="size-5 sm:size-6"
+                                            class="icon"
                                             xmlns="http://www.w3.org/2000/svg"
                                             fill="none"
                                             viewBox="0 0 24 24"
@@ -136,14 +126,12 @@ function handleImageError() {
                                         </svg>
                                     </div>
 
-                                    <div class="pt-3 sm:pt-5 lg:pt-0">
-                                        <h2
-                                            class="text-xl font-semibold text-black dark:text-white"
-                                        >
+                                    <div class="card-text">
+                                        <h2 class="card-title">
                                             Documentation
                                         </h2>
 
-                                        <p class="mt-4 text-sm/relaxed">
+                                        <p class="card-description">
                                             Laravel has wonderful documentation
                                             covering every aspect of the
                                             framework. Whether you are a
@@ -156,7 +144,7 @@ function handleImageError() {
                                 </div>
 
                                 <svg
-                                    class="size-6 shrink-0 stroke-[#FF2D20]"
+                                    class="arrow-icon"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
@@ -173,13 +161,11 @@ function handleImageError() {
 
                         <a
                             href="https://laracasts.com"
-                            class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
+                            class="card"
                         >
-                            <div
-                                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                            >
+                            <div class="icon-circle">
                                 <svg
-                                    class="size-5 sm:size-6"
+                                    class="icon"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
@@ -192,14 +178,12 @@ function handleImageError() {
                                 </svg>
                             </div>
 
-                            <div class="pt-3 sm:pt-5">
-                                <h2
-                                    class="text-xl font-semibold text-black dark:text-white"
-                                >
+                            <div class="card-text">
+                                <h2 class="card-title">
                                     Laracasts
                                 </h2>
 
-                                <p class="mt-4 text-sm/relaxed">
+                                <p class="card-description">
                                     Laracasts offers thousands of video
                                     tutorials on Laravel, PHP, and JavaScript
                                     development. Check them out, see for
@@ -209,7 +193,7 @@ function handleImageError() {
                             </div>
 
                             <svg
-                                class="size-6 shrink-0 self-center stroke-[#FF2D20]"
+                                class="arrow-icon self-center"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -225,13 +209,11 @@ function handleImageError() {
 
                         <a
                             href="https://laravel-news.com"
-                            class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] transition duration-300 hover:text-black/70 hover:ring-black/20 focus:outline-none focus-visible:ring-[#FF2D20] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800 dark:hover:text-white/70 dark:hover:ring-zinc-700 dark:focus-visible:ring-[#FF2D20]"
+                            class="card"
                         >
-                            <div
-                                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                            >
+                            <div class="icon-circle">
                                 <svg
-                                    class="size-5 sm:size-6"
+                                    class="icon"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
@@ -250,14 +232,12 @@ function handleImageError() {
                                 </svg>
                             </div>
 
-                            <div class="pt-3 sm:pt-5">
-                                <h2
-                                    class="text-xl font-semibold text-black dark:text-white"
-                                >
+                            <div class="card-text">
+                                <h2 class="card-title">
                                     Laravel News
                                 </h2>
 
-                                <p class="mt-4 text-sm/relaxed">
+                                <p class="card-description">
                                     Laravel News is a community driven portal
                                     and newsletter aggregating all of the latest
                                     and most important news in the Laravel
@@ -267,7 +247,7 @@ function handleImageError() {
                             </div>
 
                             <svg
-                                class="size-6 shrink-0 self-center stroke-[#FF2D20]"
+                                class="arrow-icon self-center"
                                 xmlns="http://www.w3.org/2000/svg"
                                 fill="none"
                                 viewBox="0 0 24 24"
@@ -281,14 +261,10 @@ function handleImageError() {
                             </svg>
                         </a>
 
-                        <div
-                            class="flex items-start gap-4 rounded-lg bg-white p-6 shadow-[0px_14px_34px_0px_rgba(0,0,0,0.08)] ring-1 ring-white/[0.05] lg:pb-10 dark:bg-zinc-900 dark:ring-zinc-800"
-                        >
-                            <div
-                                class="flex size-12 shrink-0 items-center justify-center rounded-full bg-[#FF2D20]/10 sm:size-16"
-                            >
+                        <div class="card">
+                            <div class="icon-circle">
                                 <svg
-                                    class="size-5 sm:size-6"
+                                    class="icon"
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
                                     viewBox="0 0 24 24"
@@ -301,39 +277,37 @@ function handleImageError() {
                                 </svg>
                             </div>
 
-                            <div class="pt-3 sm:pt-5">
-                                <h2
-                                    class="text-xl font-semibold text-black dark:text-white"
-                                >
+                            <div class="card-text">
+                                <h2 class="card-title">
                                     Vibrant Ecosystem
                                 </h2>
 
-                                <p class="mt-4 text-sm/relaxed">
+                                <p class="card-description">
                                     Laravel's robust library of first-party
                                     tools and libraries, such as
                                     <a
                                         href="https://forge.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white dark:focus-visible:ring-[#FF2D20]"
+                                        class="text-link"
                                         >Forge</a
                                     >,
                                     <a
                                         href="https://vapor.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Vapor</a
                                     >,
                                     <a
                                         href="https://nova.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Nova</a
                                     >,
                                     <a
                                         href="https://envoyer.io"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Envoyer</a
                                     >, and
                                     <a
                                         href="https://herd.laravel.com"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Herd</a
                                     >
                                     help you take your projects to the next
@@ -341,32 +315,32 @@ function handleImageError() {
                                     libraries like
                                     <a
                                         href="https://laravel.com/docs/billing"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Cashier</a
                                     >,
                                     <a
                                         href="https://laravel.com/docs/dusk"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Dusk</a
                                     >,
                                     <a
                                         href="https://laravel.com/docs/broadcasting"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Echo</a
                                     >,
                                     <a
                                         href="https://laravel.com/docs/horizon"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Horizon</a
                                     >,
                                     <a
                                         href="https://laravel.com/docs/sanctum"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Sanctum</a
                                     >,
                                     <a
                                         href="https://laravel.com/docs/telescope"
-                                        class="rounded-sm underline hover:text-black focus:outline-none focus-visible:ring-1 focus-visible:ring-[#FF2D20] dark:hover:text-white"
+                                        class="text-link"
                                         >Telescope</a
                                     >, and more.
                                 </p>
@@ -375,12 +349,433 @@ function handleImageError() {
                     </div>
                 </main>
 
-                <footer
-                    class="py-16 text-center text-sm text-black dark:text-white/70"
-                >
+                <footer class="footer">
                     Laravel v{{ laravelVersion }} (PHP v{{ phpVersion }})
                 </footer>
             </div>
         </div>
     </div>
 </template>
+
+<style scoped>
+/* Page Layout */
+.page-container {
+    background-color: #f9fafb;
+    color: rgba(0, 0, 0, 0.5);
+}
+
+@media (prefers-color-scheme: dark) {
+    .page-container {
+        background-color: #000000;
+        color: rgba(255, 255, 255, 0.5);
+    }
+}
+
+.background-image {
+    position: absolute;
+    top: 0;
+    left: -5rem;
+    max-width: 877px;
+}
+
+.content-wrapper {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.content-wrapper::selection {
+    background-color: #ff2d20;
+    color: #ffffff;
+}
+
+.content-container {
+    position: relative;
+    width: 100%;
+    max-width: 42rem;
+    padding: 0 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .content-container {
+        max-width: 80rem;
+    }
+}
+
+/* Header */
+.header {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: 0.5rem;
+    padding: 2.5rem 0;
+}
+
+@media (min-width: 1024px) {
+    .header {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.logo-container {
+    display: flex;
+}
+
+@media (min-width: 1024px) {
+    .logo-container {
+        grid-column-start: 2;
+        justify-content: center;
+    }
+}
+
+.laravel-logo {
+    height: 3rem;
+    width: auto;
+    color: #ffffff;
+}
+
+@media (min-width: 1024px) {
+    .laravel-logo {
+        height: 4rem;
+        color: #ff2d20;
+    }
+}
+
+/* Navigation */
+.nav-menu {
+    display: flex;
+    flex: 1;
+    justify-content: flex-end;
+    margin: 0 -0.75rem;
+}
+
+.nav-link {
+    border-radius: 0.375rem;
+    padding: 0.5rem 0.75rem;
+    color: #000000;
+    ring: 1px transparent;
+    transition: color 0.15s;
+    text-decoration: none;
+}
+
+.nav-link:hover {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+.nav-link:focus {
+    outline: none;
+}
+
+.nav-link:focus-visible {
+    box-shadow: 0 0 0 2px #ff2d20;
+}
+
+@media (prefers-color-scheme: dark) {
+    .nav-link {
+        color: #ffffff;
+    }
+
+    .nav-link:hover {
+        color: rgba(255, 255, 255, 0.8);
+    }
+
+    .nav-link:focus-visible {
+        box-shadow: 0 0 0 2px #ffffff;
+    }
+}
+
+/* Main Content */
+.main-content {
+    margin-top: 1.5rem;
+}
+
+.cards-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .cards-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 2rem;
+    }
+}
+
+/* Cards */
+.card {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+    border-radius: 0.5rem;
+    background-color: #ffffff;
+    padding: 1.5rem;
+    box-shadow: 0 14px 34px 0 rgba(0, 0, 0, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.3s;
+    text-decoration: none;
+    color: inherit;
+}
+
+.card:hover {
+    color: rgba(0, 0, 0, 0.7);
+    border-color: rgba(0, 0, 0, 0.2);
+}
+
+.card:focus {
+    outline: none;
+}
+
+.card:focus-visible {
+    box-shadow: 0 0 0 2px #ff2d20;
+}
+
+@media (min-width: 1024px) {
+    .card {
+        padding-bottom: 2.5rem;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    .card {
+        background-color: #18181b; /* zinc-900 */
+        border-color: #27272a; /* zinc-800 */
+    }
+
+    .card:hover {
+        color: rgba(255, 255, 255, 0.7);
+        border-color: #3f3f46; /* zinc-700 */
+    }
+}
+
+/* Docs Card Special Styling */
+.docs-card {
+    flex-direction: column;
+    overflow: hidden;
+}
+
+@media (min-width: 768px) {
+    .docs-card {
+        grid-row: span 3;
+    }
+}
+
+@media (min-width: 1024px) {
+    .docs-card {
+        padding: 2.5rem;
+        padding-bottom: 2.5rem;
+        gap: 1.5rem;
+    }
+}
+
+.screenshot-container {
+    position: relative;
+    display: flex;
+    width: 100%;
+    flex: 1;
+    align-items: stretch;
+}
+
+.screenshot {
+    aspect-ratio: 16 / 9;
+    height: 100%;
+    width: 100%;
+    flex: 1;
+    border-radius: 0.625rem;
+    object-fit: cover;
+    object-position: top;
+}
+
+.light-mode {
+    display: block;
+    filter: drop-shadow(0 4px 34px rgba(0, 0, 0, 0.06));
+}
+
+.dark-mode {
+    display: none;
+    filter: drop-shadow(0 4px 34px rgba(0, 0, 0, 0.25));
+}
+
+@media (prefers-color-scheme: dark) {
+    .light-mode {
+        display: none;
+    }
+    .dark-mode {
+        display: block;
+    }
+}
+
+.gradient-overlay {
+    position: absolute;
+    bottom: -4rem;
+    left: -4rem;
+    height: 10rem;
+    width: calc(100% + 8rem);
+    background: linear-gradient(to bottom, transparent, #ffffff, #ffffff);
+}
+
+@media (prefers-color-scheme: dark) {
+    .gradient-overlay {
+        background: linear-gradient(to bottom, transparent, #18181b, #18181b);
+    }
+}
+
+.card-content-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .card-content-wrapper {
+        align-items: flex-end;
+    }
+}
+
+.card-inner-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1.5rem;
+}
+
+@media (min-width: 1024px) {
+    .card-inner-content {
+        flex-direction: column;
+    }
+}
+
+/* Icons */
+.icon-circle {
+    display: flex;
+    height: 3rem;
+    width: 3rem;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    border-radius: 9999px;
+    background-color: rgba(255, 45, 32, 0.1);
+}
+
+@media (min-width: 640px) {
+    .icon-circle {
+        height: 4rem;
+        width: 4rem;
+    }
+}
+
+.icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+@media (min-width: 640px) {
+    .icon {
+        width: 1.5rem;
+        height: 1.5rem;
+    }
+}
+
+.arrow-icon {
+    width: 1.5rem;
+    height: 1.5rem;
+    flex-shrink: 0;
+    stroke: #ff2d20;
+}
+
+.self-center {
+    align-self: center;
+}
+
+/* Typography */
+.card-text {
+    padding-top: 0.75rem;
+}
+
+@media (min-width: 640px) {
+    .card-text {
+        padding-top: 1.25rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .card-text {
+        padding-top: 0;
+    }
+}
+
+.card-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+    .card-title {
+        color: #ffffff;
+    }
+}
+
+.card-description {
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.625;
+}
+
+.text-link {
+    border-radius: 0.125rem;
+    text-decoration: underline;
+    transition: color 0.15s;
+}
+
+.text-link:hover {
+    color: #000000;
+}
+
+.text-link:focus {
+    outline: none;
+}
+
+.text-link:focus-visible {
+    box-shadow: 0 0 0 1px #ff2d20;
+}
+
+@media (prefers-color-scheme: dark) {
+    .text-link:hover {
+        color: #ffffff;
+    }
+
+    .text-link:focus-visible {
+        box-shadow: 0 0 0 1px #ff2d20;
+    }
+}
+
+/* Footer */
+.footer {
+    padding: 4rem 0;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #000000;
+}
+
+@media (prefers-color-scheme: dark) {
+    .footer {
+        color: rgba(255, 255, 255, 0.7);
+    }
+}
+
+/* Utility Classes for JS Toggle */
+.hidden {
+    display: none !important;
+}
+
+.row-span-1 {
+    grid-row: span 1 !important;
+}
+
+.flex-row {
+    flex-direction: row !important;
+}
+</style>

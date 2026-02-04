@@ -1,3 +1,49 @@
+<template>
+    <GuestLayout>
+        <Head title="Forgot Password" />
+
+        <div class="info-text">
+            Forgot your password? No problem. Just let us know your email
+            address and we will email you a password reset link that will allow
+            you to choose a new one.
+        </div>
+
+        <div
+            v-if="status"
+            class="status-message"
+        >
+            {{ status }}
+        </div>
+
+        <form @submit.prevent="submit">
+            <div>
+                <InputLabel for="email" value="Email" />
+
+                <TextInput
+                    id="email"
+                    type="email"
+                    class="form-input"
+                    v-model="form.email"
+                    required
+                    autofocus
+                    autocomplete="username"
+                />
+
+                <InputError class="form-error" :message="form.errors.email" />
+            </div>
+
+            <div class="form-actions">
+                <PrimaryButton
+                    :class="{ 'opacity-25': form.processing }"
+                    :disabled="form.processing"
+                >
+                    Email Password Reset Link
+                </PrimaryButton>
+            </div>
+        </form>
+    </GuestLayout>
+</template>
+
 <script setup>
 import GuestLayout from '@/Admin/Layouts/GuestLayout.vue';
 import InputError from '@/Admin/Components/InputError.vue';
@@ -21,48 +67,50 @@ const submit = () => {
 };
 </script>
 
-<template>
-    <GuestLayout>
-        <Head title="Forgot Password" />
+<style scoped>
+.info-text {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
 
-        <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-            Forgot your password? No problem. Just let us know your email
-            address and we will email you a password reset link that will allow
-            you to choose a new one.
-        </div>
+@media (prefers-color-scheme: dark) {
+    .info-text {
+        color: #9ca3af;
+    }
+}
 
-        <div
-            v-if="status"
-            class="mb-4 text-sm font-medium text-green-600 dark:text-green-400"
-        >
-            {{ status }}
-        </div>
+.status-message {
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #16a34a;
+}
 
-        <form @submit.prevent="submit">
-            <div>
-                <InputLabel for="email" value="Email" />
+@media (prefers-color-scheme: dark) {
+    .status-message {
+        color: #4ade80;
+    }
+}
 
-                <TextInput
-                    id="email"
-                    type="email"
-                    class="mt-1 block w-full"
-                    v-model="form.email"
-                    required
-                    autofocus
-                    autocomplete="username"
-                />
+.form-input {
+    margin-top: 0.25rem;
+    display: block;
+    width: 100%;
+}
 
-                <InputError class="mt-2" :message="form.errors.email" />
-            </div>
+.form-error {
+    margin-top: 0.5rem;
+}
 
-            <div class="mt-4 flex items-center justify-end">
-                <PrimaryButton
-                    :class="{ 'opacity-25': form.processing }"
-                    :disabled="form.processing"
-                >
-                    Email Password Reset Link
-                </PrimaryButton>
-            </div>
-        </form>
-    </GuestLayout>
-</template>
+.form-actions {
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+.opacity-25 {
+    opacity: 0.25;
+}
+</style>

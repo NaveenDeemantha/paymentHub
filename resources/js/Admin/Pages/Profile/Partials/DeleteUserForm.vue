@@ -1,3 +1,70 @@
+<template>
+    <section class="section-container">
+        <header>
+            <h2 class="section-title">
+                Delete Account
+            </h2>
+
+            <p class="section-description">
+                Once your account is deleted, all of its resources and data will
+                be permanently deleted. Before deleting your account, please
+                download any data or information that you wish to retain.
+            </p>
+        </header>
+
+        <DangerButton @click="confirmUserDeletion">Delete Account</DangerButton>
+
+        <Modal :show="confirmingUserDeletion" @close="closeModal">
+            <div class="modal-content">
+                <h2 class="modal-title">
+                    Are you sure you want to delete your account?
+                </h2>
+
+                <p class="modal-description">
+                    Once your account is deleted, all of its resources and data
+                    will be permanently deleted. Please enter your password to
+                    confirm you would like to permanently delete your account.
+                </p>
+
+                <div class="form-group">
+                    <InputLabel
+                        for="password"
+                        value="Password"
+                        class="sr-only"
+                    />
+
+                    <TextInput
+                        id="password"
+                        ref="passwordInput"
+                        v-model="form.password"
+                        type="password"
+                        class="form-input"
+                        placeholder="Password"
+                        @keyup.enter="deleteUser"
+                    />
+
+                    <InputError :message="form.errors.password" class="form-error" />
+                </div>
+
+                <div class="modal-actions">
+                    <SecondaryButton @click="closeModal">
+                        Cancel
+                    </SecondaryButton>
+
+                    <DangerButton
+                        class="delete-btn"
+                        :class="{ 'opacity-25': form.processing }"
+                        :disabled="form.processing"
+                        @click="deleteUser"
+                    >
+                        Delete Account
+                    </DangerButton>
+                </div>
+            </div>
+        </Modal>
+    </section>
+</template>
+
 <script setup>
 import DangerButton from '@/Admin/Components/DangerButton.vue';
 import InputError from '@/Admin/Components/InputError.vue';
@@ -38,71 +105,102 @@ const closeModal = () => {
 };
 </script>
 
-<template>
-    <section class="space-y-6">
-        <header>
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
-                Delete Account
-            </h2>
+<style scoped>
+.section-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
 
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Once your account is deleted, all of its resources and data will
-                be permanently deleted. Before deleting your account, please
-                download any data or information that you wish to retain.
-            </p>
-        </header>
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #111827;
+}
 
-        <DangerButton @click="confirmUserDeletion">Delete Account</DangerButton>
+@media (prefers-color-scheme: dark) {
+    .section-title {
+        color: #f3f4f6;
+    }
+}
 
-        <Modal :show="confirmingUserDeletion" @close="closeModal">
-            <div class="p-6">
-                <h2
-                    class="text-lg font-medium text-gray-900 dark:text-gray-100"
-                >
-                    Are you sure you want to delete your account?
-                </h2>
+.section-description {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
 
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Once your account is deleted, all of its resources and data
-                    will be permanently deleted. Please enter your password to
-                    confirm you would like to permanently delete your account.
-                </p>
+@media (prefers-color-scheme: dark) {
+    .section-description {
+        color: #9ca3af;
+    }
+}
 
-                <div class="mt-6">
-                    <InputLabel
-                        for="password"
-                        value="Password"
-                        class="sr-only"
-                    />
+.modal-content {
+    padding: 1.5rem;
+}
 
-                    <TextInput
-                        id="password"
-                        ref="passwordInput"
-                        v-model="form.password"
-                        type="password"
-                        class="mt-1 block w-3/4"
-                        placeholder="Password"
-                        @keyup.enter="deleteUser"
-                    />
+.modal-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: #111827;
+}
 
-                    <InputError :message="form.errors.password" class="mt-2" />
-                </div>
+@media (prefers-color-scheme: dark) {
+    .modal-title {
+        color: #f3f4f6;
+    }
+}
 
-                <div class="mt-6 flex justify-end">
-                    <SecondaryButton @click="closeModal">
-                        Cancel
-                    </SecondaryButton>
+.modal-description {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    color: #4b5563;
+}
 
-                    <DangerButton
-                        class="ms-3"
-                        :class="{ 'opacity-25': form.processing }"
-                        :disabled="form.processing"
-                        @click="deleteUser"
-                    >
-                        Delete Account
-                    </DangerButton>
-                </div>
-            </div>
-        </Modal>
-    </section>
-</template>
+@media (prefers-color-scheme: dark) {
+    .modal-description {
+        color: #9ca3af;
+    }
+}
+
+.form-group {
+    margin-top: 1.5rem;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+.form-input {
+    margin-top: 0.25rem;
+    display: block;
+    width: 75%;
+}
+
+.form-error {
+    margin-top: 0.5rem;
+}
+
+.modal-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.delete-btn {
+    margin-left: 0.75rem;
+}
+
+.opacity-25 {
+    opacity: 0.25;
+}
+</style>

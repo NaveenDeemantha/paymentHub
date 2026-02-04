@@ -1,3 +1,12 @@
+<template>
+    <Link
+        :href="href"
+        class="dropdown-link"
+    >
+        <slot />
+    </Link>
+</template>
+
 <script setup>
 import { Link } from '@inertiajs/vue3';
 
@@ -9,11 +18,37 @@ defineProps({
 });
 </script>
 
-<template>
-    <Link
-        :href="href"
-        class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 transition duration-150 ease-in-out hover:bg-gray-100 focus:bg-gray-100 focus:outline-none dark:text-gray-300 dark:hover:bg-gray-800 dark:focus:bg-gray-800"
-    >
-        <slot />
-    </Link>
-</template>
+<style scoped>
+.dropdown-link {
+    display: block;
+    width: 100%;
+    padding: 0.5rem 1rem;
+    text-align: left;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    color: #374151;
+    text-decoration: none;
+    transition: background-color 0.15s ease-in-out, color 0.15s ease-in-out;
+}
+
+.dropdown-link:hover {
+    background-color: #f3f4f6;
+}
+
+.dropdown-link:focus {
+    background-color: #f3f4f6;
+    outline: none;
+}
+
+@media (prefers-color-scheme: dark) {
+    .dropdown-link {
+        color: #d1d5db;
+    }
+    .dropdown-link:hover {
+        background-color: #1f2937;
+    }
+    .dropdown-link:focus {
+        background-color: #1f2937;
+    }
+}
+</style>
