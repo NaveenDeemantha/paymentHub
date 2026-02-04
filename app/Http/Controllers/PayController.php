@@ -46,13 +46,14 @@ class PayController extends Controller
         $clientRef = $orderPrefix . '-' . now()->format('YmdHis') . '-' . uniqid();
 
         // Create transaction record
+        // Support both authenticated and non-authenticated users
         $transaction = Transaction::create([
             'client_ref' => $clientRef,
             'amount' => $validated['amount'],
             'currency' => $validated['currency'],
             'status' => 'pending',
-            'user_id' => Auth::id(),
-            'customer_email' => $validated['email'] ?? Auth::user()?->email,
+            'user_id' => Auth::id(), // Can be null for non-authenticated users
+            'customer_email' => $validated['email'] ?? (Auth::check() ? Auth::user()->email : null),
             'customer_phone' => $validated['phone'] ?? null,
             'description' => $validated['description'] ?? 'Payment',
             'initiated_at' => now(),
@@ -65,7 +66,7 @@ class PayController extends Controller
             'currency' => $validated['currency'],
             'order_id' => $clientRef,
             'description' => $validated['description'] ?? 'Payment',
-            'email' => $validated['email'] ?? Auth::user()?->email,
+            'email' => $validated['email'] ?? (Auth::check() ? Auth::user()->email : null),
             'phone' => $validated['phone'] ?? null,
         ];
 
