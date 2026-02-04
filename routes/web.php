@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 // Public Landing Page with Bank Selection
 Route::get('/', function () {
-    return Inertia::render('Home/index');
+    return Inertia::render('Frontend/Pages/Home/index');
 })->name('home');
 
 // Public Payment Gateway Routes (No authentication required)
@@ -19,7 +19,7 @@ Route::post('/pay/initiate', [PayController::class, 'initiate'])->name('pay.init
 Route::get('/pay/callback', [PayController::class, 'callback'])->name('pay.callback');
 
 // Admin Authentication Routes
-require __DIR__.'/auth.php';
+require __DIR__ . '/auth.php';
 
 // Admin Dashboard Routes (Authentication required)
 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
@@ -36,7 +36,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
             ->limit(10)
             ->get();
 
-        return Inertia::render('Dashboard', [
+        return Inertia::render('Admin/Pages/Dashboard', [
             'stats' => $stats,
             'recentTransactions' => $recentTransactions,
         ]);

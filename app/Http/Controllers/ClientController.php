@@ -17,7 +17,7 @@ class ClientController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return Inertia::render('Clients/Index', [
+        return Inertia::render('Admin/Pages/Clients/Index', [
             'clients' => $clients,
         ]);
     }
@@ -27,7 +27,7 @@ class ClientController extends Controller
      */
     public function create()
     {
-        return Inertia::render('Clients/Create');
+        return Inertia::render('Admin/Pages/Clients/Create');
     }
 
     /**
@@ -61,14 +61,16 @@ class ClientController extends Controller
      */
     public function show(Client $client)
     {
-        $client->load(['transactions' => function ($query) {
-            $query->orderBy('created_at', 'desc')->limit(10);
-        }]);
+        $client->load([
+            'transactions' => function ($query) {
+                $query->orderBy('created_at', 'desc')->limit(10);
+            }
+        ]);
 
         // Show API key only on show page (for copying)
         $client->makeVisible(['api_key', 'webhook_secret']);
 
-        return Inertia::render('Clients/Show', [
+        return Inertia::render('Admin/Pages/Clients/Show', [
             'client' => $client,
             'stats' => [
                 'total_transactions' => $client->transactions()->count(),
@@ -84,7 +86,7 @@ class ClientController extends Controller
      */
     public function edit(Client $client)
     {
-        return Inertia::render('Clients/Edit', [
+        return Inertia::render('Admin/Pages/Clients/Edit', [
             'client' => $client,
         ]);
     }
