@@ -9,11 +9,9 @@ use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
 Route::get('/', function () {
-    return Inertia::render('Welcome', [
+    return Inertia::render('Home/index', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
-        'laravelVersion' => Application::VERSION,
-        'phpVersion' => PHP_VERSION,
     ]);
 });
 
@@ -44,10 +42,12 @@ Route::middleware('auth')->group(function () {
 
 require __DIR__.'/auth.php';
 
-// Paycenter Routes
+// Paycenter Routes - Public access
+Route::get('/pay', [PayController::class, 'index'])->name('pay.index');
+Route::post('/pay/initiate', [PayController::class, 'initiate'])->name('pay.initiate');
+
+// Authenticated routes
 Route::middleware('auth')->group(function () {
-    Route::get('/pay', [PayController::class, 'index'])->name('pay.index');
-    Route::post('/pay/initiate', [PayController::class, 'initiate'])->name('pay.initiate');
     
     // Client Management
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
