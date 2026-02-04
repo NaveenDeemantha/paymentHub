@@ -32,14 +32,14 @@ onMounted(() => {
                     </svg>
                     <h1 class="text-2xl font-bold text-gray-800">PayCenter</h1>
                 </Link>
-                <div class="flex items-center space-x-4">
+                <!-- <div class="flex items-center space-x-4">
                     <Link v-if="$page.props.auth?.user" :href="route('dashboard')" class="text-gray-600 hover:text-gray-900">
                         Dashboard
                     </Link>
                     <Link v-else href="/" class="text-gray-600 hover:text-gray-900">
                         Back to Home
                     </Link>
-                </div>
+                </div> -->
             </div>
         </header>
 
