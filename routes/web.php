@@ -10,7 +10,7 @@ use Inertia\Inertia;
 
 // Public Landing Page with Bank Selection
 Route::get('/', function () {
-    return Inertia::render('Home/index');
+    return Inertia::render('Frontend/Pages/Home/index');
 })->name('home');
 
 // Public Payment Gateway Routes (No authentication required)

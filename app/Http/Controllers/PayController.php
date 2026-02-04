@@ -24,7 +24,7 @@ class PayController extends Controller
      */
     public function index()
     {
-        return Inertia::render('Paycenter/Index');
+        return Inertia::render('Frontend/Pages/Paycenter/Index');
     }
 
     /**
@@ -111,7 +111,7 @@ class PayController extends Controller
         ]);
 
         if (!$reqid) {
-            return Inertia::render('Paycenter/Result', [
+            return Inertia::render('Frontend/Pages/Paycenter/Result', [
                 'success' => false,
                 'message' => 'Invalid callback data received from payment gateway',
             ]);
@@ -123,7 +123,7 @@ class PayController extends Controller
         if (!$transaction) {
             Log::error('Transaction not found for reqid', ['reqid' => $reqid]);
 
-            return Inertia::render('Paycenter/Result', [
+            return Inertia::render('Frontend/Pages/Paycenter/Result', [
                 'success' => false,
                 'message' => 'Transaction not found',
             ]);
@@ -165,7 +165,7 @@ class PayController extends Controller
                     return redirect()->away($redirectUrl);
                 }
 
-                return Inertia::render('Paycenter/Result', [
+                return Inertia::render('Frontend/Pages/Paycenter/Result', [
                     'success' => true,
                     'message' => 'Payment completed successfully!',
                     'transaction' => [
@@ -200,7 +200,7 @@ class PayController extends Controller
                     return redirect()->away($redirectUrl);
                 }
 
-                return Inertia::render('Paycenter/Result', [
+                return Inertia::render('Frontend/Pages/Paycenter/Result', [
                     'success' => false,
                     'message' => 'Payment was ' . strtolower($paymentStatus),
                     'transaction' => [
@@ -215,7 +215,7 @@ class PayController extends Controller
                     'response_data' => $verification['data'],
                 ]);
 
-                return Inertia::render('Paycenter/Result', [
+                return Inertia::render('Frontend/Pages/Paycenter/Result', [
                     'success' => false,
                     'message' => 'Payment status: ' . $paymentStatus,
                     'transaction' => [
@@ -232,7 +232,7 @@ class PayController extends Controller
             'verification' => $verification
         ]);
 
-        return Inertia::render('Paycenter/Result', [
+        return Inertia::render('Frontend/Pages/Paycenter/Result', [
             'success' => false,
             'message' => 'Failed to verify payment status',
         ]);
@@ -247,7 +247,7 @@ class PayController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return Inertia::render('Paycenter/Transactions', [
+        return Inertia::render('Frontend/Pages/Paycenter/Transactions', [
             'transactions' => $transactions,
         ]);
     }
