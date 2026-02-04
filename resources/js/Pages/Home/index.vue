@@ -2,21 +2,13 @@
     <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
         <!-- Header -->
         <header class="bg-white shadow-sm">
-            <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="container mx-auto px-4 py-4">
                 <div class="flex items-center space-x-2">
                     <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
                         <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd"/>
                     </svg>
                     <h1 class="text-2xl font-bold text-gray-800">PayCenter</h1>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <Link v-if="$page.props.auth.user" :href="route('dashboard')" class="text-gray-600 hover:text-gray-900">
-                        Dashboard
-                    </Link>
-                    <Link v-if="!$page.props.auth.user" :href="route('login')" class="text-gray-600 hover:text-gray-900">
-                        Login
-                    </Link>
                 </div>
             </div>
         </header>
