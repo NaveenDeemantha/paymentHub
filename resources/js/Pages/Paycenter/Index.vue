@@ -56,7 +56,7 @@ onMounted(() => {
 
                         <form :action="route('pay.initiate')" method="POST" class="space-y-4">
                             <input type="hidden" name="_token" :value="csrfToken">
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div class="md:col-span-2">
                                     <label for="amount" class="block text-sm font-medium text-gray-700 mb-1">

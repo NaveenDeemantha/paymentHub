@@ -48,7 +48,7 @@ Route::post('/pay/initiate', [PayController::class, 'initiate'])->name('pay.init
 
 // Authenticated routes
 Route::middleware('auth')->group(function () {
-    
+
     // Client Management
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
     Route::post('/clients/{client}/regenerate-api-key', [\App\Http\Controllers\ClientController::class, 'regenerateApiKey'])->name('clients.regenerate-api-key');
