@@ -33,17 +33,32 @@ class PayController extends Controller
     public function initiate(Request $request)
     {
         $validated = $request->validate([
-            'amount' => 'required|numeric|min:1',
+            'amount' => 'required|numeric|min:1|max:99999999.99',
             'currency' => 'required|in:LKR,USD',
-            'order_id' => 'nullable|string',
-            'description' => 'nullable|string',
-            'email' => 'nullable|email',
-            'phone' => 'nullable|string',
+            'student_name' => 'required|string|max:255',
+            'student_id' => 'required|string|max:255',
+            'program' => 'required|string|max:255',
+            'nic_passport' => 'required|string|max:255',
+            'reference' => 'nullable|string|max:255',
+            'email' => 'required|email',
+            'phone' => 'required|string',
         ]);
 
-        // Generate unique client reference (always unique even if order_id is provided)
-        $orderPrefix = $validated['order_id'] ?? 'ORD';
+        // Generate unique client reference
+        // Use reference as prefix if available, otherwise ORD
+        $orderPrefix = $validated['reference'] ?? 'ORD';
+        // Clean prefix to ensure it's alphanumeric for safety
+        $orderPrefix = preg_replace('/[^a-zA-Z0-9]/', '', $orderPrefix);
+        if (empty($orderPrefix))
+            $orderPrefix = 'ORD';
+
         $clientRef = $orderPrefix . '-' . now()->format('YmdHis') . '-' . uniqid();
+
+        // Format description for the gateway
+        $gatewayDescription = "{$validated['program']} - {$validated['student_name']} ({$validated['student_id']})";
+        if (!empty($validated['reference'])) {
+            $gatewayDescription .= " Ref: {$validated['reference']}";
+        }
 
         // Create transaction record
         // Support both authenticated and non-authenticated users
@@ -53,11 +68,11 @@ class PayController extends Controller
             'currency' => $validated['currency'],
             'status' => 'pending',
             'user_id' => Auth::id(), // Can be null for non-authenticated users
-            'customer_email' => $validated['email'] ?? (Auth::check() ? Auth::user()->email : null),
-            'customer_phone' => $validated['phone'] ?? null,
-            'description' => $validated['description'] ?? 'Payment',
+            'customer_email' => $validated['email'],
+            'customer_phone' => $validated['phone'],
+            'description' => $gatewayDescription, // Start with gateway description
             'initiated_at' => now(),
-            'request_data' => $validated,
+            'request_data' => $validated, // Stores all student info
         ]);
 
         // Prepare payment data
@@ -65,9 +80,9 @@ class PayController extends Controller
             'amount' => $validated['amount'],
             'currency' => $validated['currency'],
             'order_id' => $clientRef,
-            'description' => $validated['description'] ?? 'Payment',
-            'email' => $validated['email'] ?? (Auth::check() ? Auth::user()->email : null),
-            'phone' => $validated['phone'] ?? null,
+            'description' => $gatewayDescription,
+            'email' => $validated['email'],
+            'phone' => $validated['phone'],
         ];
 
         // Call Paycenter API

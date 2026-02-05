@@ -2,7 +2,7 @@
     <Head title="Paycenter Payment" />
 
     <div class="page-container">
-        
+
         <!-- LEFT PANEL: Summary -->
         <div class="summary-panel">
              <!-- Background Texture -->
@@ -18,7 +18,7 @@
                 </Link>
 
                 <div class="hero-section">
-                    <p class="overline">COMPLETE YOUR PAYMENT</p>
+                    <p class="overline">Proceed to Payment</p>
                     <h1 class="main-title">Secure <br> Checkout</h1>
                 </div>
 
@@ -29,11 +29,11 @@
                             <svg class="check-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
                         </div>
                         <div>
-                            <p class="badge-title">SSL Encrypted</p>
-                            <p class="badge-subtitle">Your data is physically secured.</p>
+                            <p class="badge-title">Securely Encrypted</p>
+                            <p class="badge-subtitle">Your data is secured.</p>
                         </div>
                     </div>
-                    
+
                     <p class="terms-text">
                         By proceeding, you agree to our <a href="#" class="terms-link">Terms of Service</a>.
                     </p>
@@ -43,7 +43,7 @@
 
         <!-- RIGHT PANEL: Form -->
         <div class="form-panel">
-            
+
             <!-- Mobile Header (Visible only on small screens) -->
             <div class="mobile-header">
                  <Link href="/" class="mobile-back">
@@ -56,7 +56,7 @@
             <!-- Form Container -->
             <div class="form-wrapper">
                 <div class="form-card">
-                    
+
                     <div class="form-header">
                         <div class="merchant-info">
                             <div class="merchant-logo">
@@ -75,12 +75,63 @@
                     <form :action="route('pay.initiate')" method="POST" class="payment-form">
                         <input type="hidden" name="_token" :value="csrfToken">
 
-                        <!-- Row 1: Amount & Currency -->
+                        <!-- Row 1: Student Info -->
+                        <div class="form-row grid-cols-2">
+                             <div>
+                                <label class="input-label">Student Name</label>
+                                <input type="text" name="student_name" v-model="form.student_name"
+                                    class="input-field" placeholder="Full Name" required>
+                            </div>
+                            <div>
+                                <label class="input-label">Student ID</label>
+                                <input type="text" name="student_id" v-model="form.student_id"
+                                    class="input-field" placeholder="Student ID" required>
+                            </div>
+                        </div>
+
+                        <!-- Row 2: Program & NIC -->
+                        <div class="form-row grid-cols-12">
+                             <div class="col-main">
+                                <label class="input-label">Program</label>
+                                <input type="text" name="program" v-model="form.program"
+                                    class="input-field" placeholder="Program Name" required>
+                            </div>
+                            <div class="col-side">
+                                <label class="input-label">NIC / Passport</label>
+                                <input type="text" name="nic_passport" v-model="form.nic_passport"
+                                    class="input-field" placeholder="NIC or Passport ID" required>
+                            </div>
+                        </div>
+
+                         <!-- Row 3: Contact Info -->
+                        <div class="form-row grid-cols-2">
+                             <div>
+                                <label class="input-label">Email Address</label>
+                                <input type="email" name="email" v-model="form.email"
+                                    class="input-field" placeholder="name@example.com" required>
+                            </div>
+                            <div>
+                                <label class="input-label">Mobile Number</label>
+                                <input type="tel" name="phone" v-model="form.phone"
+                                    class="input-field" placeholder="+94 7X XXX XXXX" required>
+                            </div>
+                        </div>
+
+                        <!-- Row 4: Reference -->
+                        <div class="form-row">
+                             <div>
+                                <label class="input-label">Reference <span class="optional">(Optional)</span></label>
+                                <input type="text" name="reference" v-model="form.reference"
+                                    class="input-field" placeholder="Any Reference / Remarks">
+                            </div>
+                        </div>
+
+                        <!-- Row 5: Amount & Currency -->
                         <div class="form-row grid-cols-12">
                             <div class="col-main">
                                 <label class="input-label">Amount</label>
                                 <div class="input-group">
-                                    <span class="currency-prefix">Rs.</span>
+                                    <span class="currency-prefix">{{ form.currency === 'LKR' ? 'Rs.' : '$' }}</span>
                                     <input type="number" name="amount" v-model="form.amount" required step="0.01"
                                         class="input-field-large" placeholder="0.00">
                                 </div>
@@ -91,34 +142,6 @@
                                     <option value="LKR">LKR</option>
                                     <option value="USD">USD</option>
                                 </select>
-                            </div>
-                        </div>
-
-                        <!-- Row 2: Reference & Description -->
-                        <div class="form-row grid-cols-2">
-                             <div>
-                                <label class="input-label">Reference ID <span class="optional">(Optional)</span></label>
-                                <input type="text" name="order_id" v-model="form.order_id"
-                                    class="input-field" placeholder="e.g. ST-2024-001">
-                            </div>
-                            <div>
-                                <label class="input-label">Description</label>
-                                <input type="text" name="description" v-model="form.description"
-                                    class="input-field" placeholder="e.g. Semester Fees">
-                            </div>
-                        </div>
-
-                         <!-- Row 3: Contact Info -->
-                        <div class="form-row grid-cols-2">
-                             <div>
-                                <label class="input-label">Email Receipt To</label>
-                                <input type="email" name="email" v-model="form.email"
-                                    class="input-field" placeholder="name@example.com">
-                            </div>
-                            <div>
-                                <label class="input-label">Phone Number</label>
-                                <input type="tel" name="phone" v-model="form.phone"
-                                    class="input-field" placeholder="+94 7X XXX XXXX">
                             </div>
                         </div>
 
@@ -151,11 +174,14 @@
 import { Head, Link, useForm } from '@inertiajs/vue3'; // Assuming useForm is available or standard Ref
 import { ref, onMounted } from 'vue';
 
-const form = ref({
+const form = useForm({
     amount: 500,
     currency: 'LKR',
-    order_id: '',
-    description: '',
+    student_name: '',
+    student_id: '',
+    program: '',
+    nic_passport: '',
+    reference: '',
     email: '',
     phone: '',
 });
@@ -225,7 +251,7 @@ onMounted(() => {
 .panel-content {
     position: relative;
     z-index: 10;
-    padding: 2rem;
+    padding: 1.5rem;
     display: flex;
     flex-direction: column;
     height: 100%;
@@ -234,7 +260,7 @@ onMounted(() => {
 
 @media (min-width: 1024px) {
     .panel-content {
-        padding: 3rem;
+        padding: 2rem;
     }
 }
 
@@ -243,7 +269,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
     opacity: 0.8;
     transition: opacity 0.2s;
     text-decoration: none;
@@ -280,24 +306,24 @@ onMounted(() => {
 
 /* Hero Section inside Panel */
 .hero-section {
-    margin-top: 1rem;
+    margin-top: 0.5rem;
     animation: slideInLeft 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.1s backwards;
 }
 
 .overline {
     color: #dcb01d;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     letter-spacing: 0.1em;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.375rem;
 }
 
 .main-title {
     font-family: 'Merriweather', serif;
-    font-size: 1.875rem;
+    font-size: 1.5rem;
     font-weight: 500;
-    line-height: 1.25;
+    line-height: 1.2;
 }
 
 /* Footer in Panel */
@@ -305,7 +331,7 @@ onMounted(() => {
     margin-top: auto;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: 1rem;
     animation: fadeIn 1s ease-out 0.5s backwards;
 }
 
@@ -313,7 +339,7 @@ onMounted(() => {
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    padding: 1rem;
+    padding: 0.75rem;
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: 0.75rem;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -384,7 +410,7 @@ onMounted(() => {
 }
 
 .mobile-header {
-    height: 4rem;
+    height: 3rem;
     background-color: #0b1120;
     color: white;
     display: flex;
@@ -410,7 +436,7 @@ onMounted(() => {
 .form-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -419,7 +445,7 @@ onMounted(() => {
 
 @media (min-width: 768px) {
     .form-wrapper {
-        padding: 3rem;
+        padding: 1.5rem;
     }
 }
 
@@ -431,24 +457,24 @@ onMounted(() => {
 }
 
 .form-header {
-    margin-bottom: 2rem;
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     border-bottom: 1px solid #f1f5f9;
-    padding-bottom: 1rem;
+    padding-bottom: 0.75rem;
 }
 
 .merchant-info {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
 .merchant-logo {
-    width: 3rem;
-    height: 3rem;
-    border-radius: 0.75rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 0.5rem;
     background-color: #fff7ed;
     border: 1px solid #ffedd5;
     display: flex;
@@ -457,13 +483,13 @@ onMounted(() => {
 }
 
 .merchant-name {
-    font-size: 1.25rem;
+    font-size: 1.125rem;
     font-weight: 700;
     color: #1e293b;
 }
 
 .merchant-sub {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #64748b;
 }
 
@@ -492,13 +518,13 @@ onMounted(() => {
 .payment-form {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: 0.875rem;
 }
 
 .form-row {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 1.25rem;
+    gap: 0.75rem;
 }
 
 @media (min-width: 640px) {
@@ -518,12 +544,12 @@ onMounted(() => {
 
 .input-label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 700;
     text-transform: uppercase;
     color: #94a3b8;
     letter-spacing: 0.05em;
-    margin-bottom: 0.375rem;
+    margin-bottom: 0.25rem;
 }
 
 .optional {
@@ -558,20 +584,20 @@ onMounted(() => {
 .input-field-large {
     padding-left: 3rem;
     padding-right: 1rem;
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
-    font-size: 1.125rem;
+    padding-top: 0.625rem;
+    padding-bottom: 0.625rem;
+    font-size: 1rem;
     font-weight: 700;
 }
 
 .input-field {
-    padding: 0.625rem 1rem;
+    padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
     font-weight: 500;
 }
 
 .select-field {
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 0.75rem;
     font-weight: 700;
 }
 
@@ -595,12 +621,12 @@ onMounted(() => {
 }
 
 .submit-section {
-    padding-top: 1rem;
+    padding-top: 0.5rem;
 }
 
 .submit-btn {
     width: 100%;
-    padding: 1rem;
+    padding: 0.75rem;
     background-color: #0b1120;
     color: white;
     font-weight: 700;
@@ -632,7 +658,7 @@ onMounted(() => {
 }
 
 .pane-footer {
-    height: 3rem;
+    height: 2.5rem;
     background-color: #ffffff;
     border-top: 1px solid #f1f5f9;
     display: flex;
@@ -652,13 +678,13 @@ onMounted(() => {
 }
 
 @keyframes slideInLeft {
-    from { 
-        opacity: 0; 
-        transform: translateX(-20px); 
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
     }
-    to { 
-        opacity: 1; 
-        transform: translateX(0); 
+    to {
+        opacity: 1;
+        transform: translateX(0);
     }
 }
 
