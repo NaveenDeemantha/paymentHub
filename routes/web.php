@@ -31,8 +31,7 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
             'total_amount' => number_format(Transaction::where('status', 'completed')->sum('amount'), 2),
         ];
 
-        $recentTransactions = Transaction::with('client')
-            ->orderBy('created_at', 'desc')
+        $recentTransactions = Transaction::orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 
@@ -50,4 +49,8 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
     Route::post('/clients/{client}/regenerate-api-key', [\App\Http\Controllers\ClientController::class, 'regenerateApiKey'])->name('clients.regenerate-api-key');
     Route::post('/clients/{client}/regenerate-webhook-secret', [\App\Http\Controllers\ClientController::class, 'regenerateWebhookSecret'])->name('clients.regenerate-webhook-secret');
+
+    // Transaction Management
+    Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
+    Route::get('/transactions/{transaction}', [\App\Http\Controllers\TransactionController::class, 'show'])->name('transactions.show');
 });

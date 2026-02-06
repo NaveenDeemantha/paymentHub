@@ -28,6 +28,12 @@
                                     Clients
                                 </NavLink>
                                 <NavLink
+                                    :href="route('transactions.index')"
+                                    :active="route().current('transactions.*')"
+                                >
+                                    Transactions
+                                </NavLink>
+                                <NavLink
                                     :href="route('pay.index')"
                                     :active="route().current('pay.*')"
                                 >
@@ -138,6 +144,12 @@
                             :active="route().current('clients.*')"
                         >
                             Clients
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            :href="route('transactions.index')"
+                            :active="route().current('transactions.*')"
+                        >
+                            Transactions
                         </ResponsiveNavLink>
                         <ResponsiveNavLink
                             :href="route('pay.index')"

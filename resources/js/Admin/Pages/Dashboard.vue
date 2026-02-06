@@ -126,6 +126,21 @@
                                     <p class="action-description">Make a test payment</p>
                                 </div>
                             </Link>
+
+                            <Link
+                                :href="route('transactions.index')"
+                                class="action-card action-yellow"
+                            >
+                                <div class="action-icon-wrapper yellow">
+                                    <svg class="action-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
+                                    </svg>
+                                </div>
+                                <div class="action-text">
+                                    <h4 class="action-title">View All Transactions</h4>
+                                    <p class="action-description">Browse payment records</p>
+                                </div>
+                            </Link>
                         </div>
                     </div>
                 </div>
@@ -140,7 +155,7 @@
                             <table class="data-table">
                                 <thead class="table-head">
                                     <tr>
-                                        <th class="table-header">Client</th>
+                                        <th class="table-header">Student</th>
                                         <th class="table-header">Reference</th>
                                         <th class="table-header">Amount</th>
                                         <th class="table-header">Status</th>
@@ -151,7 +166,10 @@
                                     <tr v-for="transaction in recentTransactions" :key="transaction.id" class="table-row">
                                         <td class="table-cell">
                                             <div class="cell-primary">
-                                                {{ transaction.client?.name || 'Direct' }}
+                                                {{ transaction.student_name || 'N/A' }}
+                                            </div>
+                                            <div class="cell-secondary">
+                                                {{ transaction.student_id || 'N/A' }}
                                             </div>
                                         </td>
                                         <td class="table-cell">
@@ -493,11 +511,13 @@ defineProps({
 .action-blue:hover { border-color: #6366f1; }
 .action-purple:hover { border-color: #a855f7; }
 .action-green:hover { border-color: #22c55e; }
+.action-yellow:hover { border-color: #f59e0b; }
 
 @media (prefers-color-scheme: dark) {
     .action-blue:hover { border-color: #818cf8; }
     .action-purple:hover { border-color: #c084fc; }
     .action-green:hover { border-color: #4ade80; }
+    .action-yellow:hover { border-color: #fbbf24; }
 }
 
 .action-icon-wrapper {
@@ -514,11 +534,13 @@ defineProps({
 .action-icon-wrapper.blue { background-color: #e0e7ff; color: #4f46e5; }
 .action-icon-wrapper.purple { background-color: #f3e8ff; color: #9333ea; }
 .action-icon-wrapper.green { background-color: #dcfce7; color: #16a34a; }
+.action-icon-wrapper.yellow { background-color: #fef3c7; color: #d97706; }
 
 @media (prefers-color-scheme: dark) {
     .action-icon-wrapper.blue { background-color: #312e81; color: #a5b4fc; }
     .action-icon-wrapper.purple { background-color: #581c87; color: #d8b4fe; }
     .action-icon-wrapper.green { background-color: #14532d; color: #86efac; }
+    .action-icon-wrapper.yellow { background-color: #78350f; color: #fde68a; }
 }
 
 .action-icon {

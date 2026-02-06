@@ -61,18 +61,21 @@ class PayController extends Controller
         }
 
         // Create transaction record
-        // Support both authenticated and non-authenticated users
         $transaction = Transaction::create([
             'client_ref' => $clientRef,
             'amount' => $validated['amount'],
             'currency' => $validated['currency'],
             'status' => 'pending',
-            'user_id' => Auth::id(), // Can be null for non-authenticated users
             'customer_email' => $validated['email'],
             'customer_phone' => $validated['phone'],
-            'description' => $gatewayDescription, // Start with gateway description
+            'student_name' => $validated['student_name'],
+            'student_id' => $validated['student_id'],
+            'program' => $validated['program'],
+            'nic_passport' => $validated['nic_passport'],
+            'reference' => $validated['reference'] ?? null,
+            'description' => $gatewayDescription,
             'initiated_at' => now(),
-            'request_data' => $validated, // Stores all student info
+            'request_data' => $validated,
         ]);
 
         // Prepare payment data
@@ -161,25 +164,6 @@ class PayController extends Controller
                     'response_data' => $verification['data'],
                 ]);
 
-                // Send webhook to client if transaction has client_id
-                if ($transaction->client_id) {
-                    $this->sendWebhook($transaction);
-                }
-
-                // If transaction is from external client (has client_id), redirect to client's return URL
-                if ($transaction->client_id && $transaction->client) {
-                    $returnUrl = $transaction->request_data['return_url'] ?? $transaction->client->return_url;
-                    $redirectUrl = $returnUrl . '?' . http_build_query([
-                        'status' => 'success',
-                        'client_ref' => $transaction->client_ref,
-                        'transaction_id' => $transactionId,
-                        'amount' => $transaction->amount,
-                        'currency' => $transaction->currency,
-                    ]);
-
-                    return redirect()->away($redirectUrl);
-                }
-
                 return Inertia::render('Frontend/Pages/Paycenter/Result', [
                     'success' => true,
                     'message' => 'Payment completed successfully!',
@@ -197,23 +181,6 @@ class PayController extends Controller
                     'payment_state' => $paymentStatus,
                     'response_data' => $verification['data'],
                 ]);
-
-                // Send webhook to client
-                if ($transaction->client_id) {
-                    $this->sendWebhook($transaction);
-                }
-
-                // Redirect to client's return URL if external transaction
-                if ($transaction->client_id && $transaction->client) {
-                    $returnUrl = $transaction->request_data['return_url'] ?? $transaction->client->return_url;
-                    $redirectUrl = $returnUrl . '?' . http_build_query([
-                        'status' => 'failed',
-                        'client_ref' => $transaction->client_ref,
-                        'payment_state' => $paymentStatus,
-                    ]);
-
-                    return redirect()->away($redirectUrl);
-                }
 
                 return Inertia::render('Frontend/Pages/Paycenter/Result', [
                     'success' => false,
@@ -253,60 +220,4 @@ class PayController extends Controller
         ]);
     }
 
-    /**
-     * Show transaction history for authenticated user
-     */
-    public function transactions()
-    {
-        $transactions = Transaction::where('user_id', Auth::id())
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
-
-        return Inertia::render('Frontend/Pages/Paycenter/Transactions', [
-            'transactions' => $transactions,
-        ]);
-    }
-
-    /**
-     * Send webhook notification to client
-     */
-    protected function sendWebhook(Transaction $transaction): void
-    {
-        if (!$transaction->client || !$transaction->client->webhook_url) {
-            return;
-        }
-
-        try {
-            $payload = [
-                'event' => 'payment.' . $transaction->status,
-                'transaction_id' => $transaction->id,
-                'client_ref' => $transaction->client_ref,
-                'amount' => $transaction->amount,
-                'currency' => $transaction->currency,
-                'status' => $transaction->status,
-                'payment_state' => $transaction->payment_state,
-                'paycenter_transaction_id' => $transaction->transaction_id,
-                'completed_at' => $transaction->completed_at?->toIso8601String(),
-                'metadata' => $transaction->request_data['metadata'] ?? null,
-            ];
-
-            // Generate signature
-            $signature = hash_hmac('sha256', json_encode($payload), $transaction->client->webhook_secret);
-
-            Http::withHeaders([
-                'X-Webhook-Signature' => $signature,
-                'Content-Type' => 'application/json',
-            ])->timeout(10)->post($transaction->client->webhook_url, $payload);
-
-            Log::info('Webhook sent', [
-                'client_id' => $transaction->client_id,
-                'transaction_id' => $transaction->id,
-            ]);
-        } catch (\Exception $e) {
-            Log::error('Webhook failed', [
-                'client_id' => $transaction->client_id,
-                'error' => $e->getMessage(),
-            ]);
-        }
-    }
 }

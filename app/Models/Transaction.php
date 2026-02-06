@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Transaction extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'client_id',
         'client_ref',
         'reqid',
         'transaction_id',
@@ -19,9 +17,13 @@ class Transaction extends Model
         'currency',
         'status',
         'payment_state',
-        'user_id',
         'customer_email',
         'customer_phone',
+        'student_name',
+        'student_id',
+        'program',
+        'nic_passport',
+        'reference',
         'description',
         'request_data',
         'response_data',
@@ -37,21 +39,7 @@ class Transaction extends Model
         'completed_at' => 'datetime',
     ];
 
-    /**
-     * Get the user that owns the transaction
-     */
-    public function user(): BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
 
-    /**
-     * Get the client that owns the transaction
-     */
-    public function client(): BelongsTo
-    {
-        return $this->belongsTo(Client::class);
-    }
 
     /**
      * Check if transaction is successful
