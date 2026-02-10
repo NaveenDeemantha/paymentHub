@@ -10,7 +10,7 @@
                 <div class="brand-header">
                      <div class="brand-logo-wrapper">
                         <div class="brand-logo-icon">
-                            <svg class="icon-gold" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                            <img src="/images/winfield-logo.png" alt="Winfield Logo" class="logo-image">
                         </div>
                         <span class="brand-name">PayCenter</span>
                     </div>
@@ -211,19 +211,19 @@ defineProps({
     margin-bottom: 1.5rem;
 }
 
-.brand-logo-icon {
+/* .brand-logo-icon {
     padding: 0.625rem;
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(213, 213, 213, 0.1);
     backdrop-filter: blur(12px);
     border-radius: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
+} */
 
-.icon-gold {
-    width: 2rem;
-    height: 2rem;
-    color: #dcb01d;
+.logo-image {
+    width: 10rem;
+    height: 10rem;
+    object-fit: contain;
 }
 
 
