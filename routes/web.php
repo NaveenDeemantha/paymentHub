@@ -28,10 +28,11 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
             'total_clients' => Client::count(),
             'total_transactions' => Transaction::count(),
             'completed_transactions' => Transaction::where('status', 'completed')->count(),
-            'total_amount' => number_format(Transaction::where('status', 'completed')->sum('amount'), 2),
+            'total_amount' => number_format(Transaction::where('status', 'completed')->sum('amount') ?? 0, 2),
         ];
 
-        $recentTransactions = Transaction::orderBy('created_at', 'desc')
+        $recentTransactions = Transaction::with('client')
+            ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
 

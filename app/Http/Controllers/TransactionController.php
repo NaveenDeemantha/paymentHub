@@ -13,7 +13,7 @@ class TransactionController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Transaction::orderBy('created_at', 'desc');
+        $query = Transaction::with('client')->orderBy('created_at', 'desc');
 
         // Filter by status if provided
         if ($request->has('status') && $request->status !== '') {
@@ -46,6 +46,8 @@ class TransactionController extends Controller
      */
     public function show(Transaction $transaction)
     {
+        $transaction->load('client');
+        
         return Inertia::render('Admin/Pages/Transactions/Show', [
             'transaction' => $transaction,
         ]);
