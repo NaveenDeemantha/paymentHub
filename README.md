@@ -140,7 +140,7 @@ Visit: `http://localhost:8000`
 6. Complete payment on Paycenter's platform
 7. After payment, you'll be **redirected back** to see the result
 
-### Payment Flow
+<!-- ### Payment Flow
 
 ```
 User fills form → Laravel creates transaction → Redirect to Paycenter
@@ -169,8 +169,8 @@ User sees result ← Laravel verifies status ← Paycenter redirects back
 | POST | `/pay/initiate` | Initiate payment and redirect to Paycenter |
 | GET | `/pay/callback` | Handle callback from Paycenter after payment |
 
-All routes require authentication (`auth` middleware).
-
+All routes require authentication (`auth` middleware). -->
+<!-- 
 ## Configuration
 
 ### Paycenter Configuration File
@@ -295,7 +295,7 @@ For issues related to:
 
 This project is open-source. See LICENSE file for details.
 
-## Credits
+## Credits -->
 
 Developed with Laravel 10, Vue 3, Inertia.js, and Tailwind CSS.  
 Paycenter Web 4.0 Integration by NaveenDeemantha
