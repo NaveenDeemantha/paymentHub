@@ -3,148 +3,167 @@
 
     <AuthenticatedLayout>
         <template #header>
-            <h2 class="page-title">
-                All Transactions
-            </h2>
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Transaction History</h1>
+                    <p class="page-subtitle">View and manage all payment transactions</p>
+                </div>
+                <!-- <button @click="exportTransactions" class="btn-export">
+                    <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Export
+                </button> -->
+            </div>
         </template>
 
-        <div class="content-container">
-            <div class="content-wrapper">
-                <!-- Filters -->
-                <div class="card">
-                    <div class="card-body">
-                        <form @submit.prevent="applyFilters" class="filter-form">
-                            <div class="filter-row">
-                                <div class="filter-field">
-                                    <label class="filter-label">Search</label>
-                                    <input
-                                        type="text"
-                                        v-model="filterForm.search"
-                                        class="filter-input"
-                                        placeholder="Student name, email, phone, reference..."
-                                    />
-                                </div>
-                                <div class="filter-field">
-                                    <label class="filter-label">Status</label>
-                                    <select v-model="filterForm.status" class="filter-select">
-                                        <option value="">All Statuses</option>
-                                        <option value="pending">Pending</option>
-                                        <option value="processing">Processing</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="failed">Failed</option>
-                                        <option value="cancelled">Cancelled</option>
-                                    </select>
-                                </div>
-                                <div class="filter-actions">
-                                    <button type="submit" class="btn-primary">
-                                        Apply Filters
-                                    </button>
-                                    <button type="button" @click="clearFilters" class="btn-secondary">
-                                        Clear
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+        <div class="content-wrapper">
+            <!-- Filter Bar -->
+            <div class="filter-bar">
+                <div class="filter-group search-group">
+                    <label class="filter-label">Search</label>
+                    <div class="search-input-wrapper">
+                        <svg class="search-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                        <input
+                            v-model="search"
+                            @input="debounceSearch"
+                            type="text"
+                            placeholder="Search by transaction ID, student name, or student ID..."
+                            class="filter-input search-input"
+                        >
+                        <button v-if="search" @click="clearSearch" class="clear-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
 
-                <!-- Transactions Table -->
-                <div class="card">
-                    <div class="card-body">
-                        <div class="table-container">
-                            <table class="data-table">
-                                <thead class="table-head">
-                                    <tr>
-                                        <th class="table-header">Student Info</th>
-                                        <th class="table-header">Contact</th>
-                                        <th class="table-header">Program</th>
-                                        <th class="table-header">Amount</th>
-                                        <th class="table-header">Status</th>
-                                        <th class="table-header">Date</th>
-                                        <th class="table-header">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="table-body">
-                                    <tr v-if="transactions.data.length === 0">
-                                        <td colspan="7" class="table-cell text-center py-8 text-gray-500">
-                                            No transactions found
-                                        </td>
-                                    </tr>
-                                    <tr v-for="transaction in transactions.data" :key="transaction.id" class="table-row">
-                                        <td class="table-cell">
-                                            <div class="cell-primary">{{ transaction.student_name || 'N/A' }}</div>
-                                            <div class="cell-secondary">ID: {{ transaction.student_id || 'N/A' }}</div>
-                                            <div class="cell-secondary">NIC: {{ transaction.nic_passport || 'N/A' }}</div>
-                                        </td>
-                                        <td class="table-cell">
-                                            <div class="cell-primary">{{ transaction.customer_email || 'N/A' }}</div>
-                                            <div class="cell-secondary">{{ transaction.customer_phone || 'N/A' }}</div>
-                                        </td>
-                                        <td class="table-cell">
-                                            <div class="cell-primary">{{ transaction.program || 'N/A' }}</div>
-                                            <div class="cell-secondary" v-if="transaction.reference">
-                                                Ref: {{ transaction.reference }}
-                                            </div>
-                                        </td>
-                                        <td class="table-cell">
-                                            <div class="cell-primary">
-                                                {{ transaction.currency }} {{ transaction.amount }}
-                                            </div>
-                                            <div class="cell-secondary">{{ transaction.client_ref }}</div>
-                                        </td>
-                                        <td class="table-cell">
-                                            <span
-                                                :class="[
-                                                    'status-badge',
-                                                    transaction.status === 'completed' ? 'status-green' :
-                                                    transaction.status === 'failed' ? 'status-red' :
-                                                    transaction.status === 'processing' ? 'status-blue' :
-                                                    'status-yellow'
-                                                ]"
-                                            >
-                                                {{ transaction.status }}
-                                            </span>
-                                        </td>
-                                        <td class="table-cell cell-secondary">
-                                            <div>{{ formatDate(transaction.created_at) }}</div>
-                                            <div v-if="transaction.completed_at" class="text-xs">
-                                                Completed: {{ formatDate(transaction.completed_at) }}
-                                            </div>
-                                        </td>
-                                        <td class="table-cell">
-                                            <Link
-                                                :href="route('transactions.show', transaction.id)"
-                                                class="btn-view"
-                                            >
-                                                View
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
+                <div class="filter-group">
+                    <label class="filter-label">Status</label>
+                    <select v-model="status" @change="applyFilters" class="filter-select">
+                        <option value="">All Statuses</option>
+                        <option value="completed">Completed</option>
+                        <option value="pending">Pending</option>
+                        <option value="processing">Processing</option>
+                        <option value="failed">Failed</option>
+                    </select>
+                </div>
 
-                        <!-- Pagination -->
-                        <div v-if="transactions.data.length > 0" class="pagination">
-                            <div class="pagination-info">
-                                Showing {{ transactions.from }} to {{ transactions.to }} of {{ transactions.total }} transactions
-                            </div>
-                            <div class="pagination-links">
-                                <Link
-                                    v-for="link in transactions.links"
-                                    :key="link.label"
-                                    :href="link.url"
-                                    :class="[
-                                        'pagination-link',
-                                        { 'pagination-active': link.active },
-                                        { 'pagination-disabled': !link.url }
-                                    ]"
-                                    v-html="link.label"
-                                />
-                            </div>
-                        </div>
+                <div class="filter-group">
+                    <label class="filter-label">Date From</label>
+                    <input
+                        v-model="date_from"
+                        @change="applyFilters"
+                        type="date"
+                        class="filter-input"
+                    >
+                </div>
+
+                <div class="filter-group">
+                    <label class="filter-label">Date To</label>
+                    <input
+                        v-model="date_to"
+                        @change="applyFilters"
+                        type="date"
+                        class="filter-input"
+                    >
+                </div>
+
+                <div class="filter-actions">
+                    <button @click="resetFilters" class="btn-reset">
+                        <svg class="icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                        </svg>
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <div v-if="transactions.data && transactions.data.length > 0" class="table-section">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Student Name</th>
+                                <th>Student ID</th>
+                                <th>Client</th>
+                                <th>Amount</th>
+                                <th>Status</th>
+                                <th>Date</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="transaction in transactions.data" :key="transaction.id">
+                                <td>
+                                    <span class="transaction-id">{{ transaction.transaction_number || transaction.id }}</span>
+                                </td>
+                                <td>
+                                    <span class="student-name">{{ transaction.student_name || 'N/A' }}</span>
+                                </td>
+                                <td>
+                                    <span class="student-id">{{ transaction.student_id || 'N/A' }}</span>
+                                </td>
+                                <td>
+                                    <span class="client-badge">
+                                        {{ transaction.client ? transaction.client.name : 'N/A' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="amount-text">{{ transaction.currency }} {{ formatAmount(transaction.amount) }}</span>
+                                </td>
+                                <td>
+                                    <span :class="['status-badge', getStatusClass(transaction.status)]">
+                                        {{ formatStatus(transaction.status) }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="date-text">{{ formatDate(transaction.created_at) }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <Link :href="route('transactions.show', transaction.id)" class="btn-action">
+                                        View Details
+                                    </Link>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Pagination -->
+                <div v-if="transactions.links && transactions.links.length > 3" class="pagination">
+                    <div class="pagination-info">
+                        Showing {{ transactions.from }} to {{ transactions.to }} of {{ transactions.total }} transactions
+                    </div>
+                    <div class="pagination-links">
+                        <Link
+                            v-for="link in transactions.links"
+                            :key="link.label"
+                            :href="link.url"
+                            :class="[
+                                'page-link',
+                                link.active && 'active',
+                                !link.url && 'disabled'
+                            ]"
+                            v-html="link.label"
+                        />
                     </div>
                 </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="empty-state">
+                <div class="empty-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+                <h3 class="empty-title">No transactions yet</h3>
+                <p class="empty-description">Transactions will appear here once your clients start processing payments.</p>
             </div>
         </div>
     </AuthenticatedLayout>
@@ -153,201 +172,308 @@
 <script setup>
 import AuthenticatedLayout from '@/Admin/Layouts/AuthenticatedLayout.vue';
 import { Head, Link, router } from '@inertiajs/vue3';
-import { reactive } from 'vue';
+import { ref, watch, onUnmounted } from 'vue';
 
 const props = defineProps({
     transactions: Object,
-    filters: Object,
+    filters: {
+        type: Object,
+        default: () => ({})
+    },
 });
 
-const filterForm = reactive({
-    search: props.filters?.search || '',
-    status: props.filters?.status || '',
-});
+// Initialize filters with refs
+const search = ref(props.filters.search || '');
+const status = ref(props.filters.status || '');
+const date_from = ref(props.filters.date_from || '');
+const date_to = ref(props.filters.date_to || '');
 
-function applyFilters() {
-    router.get(route('transactions.index'), {
-        search: filterForm.search,
-        status: filterForm.status,
-    }, {
-        preserveState: true,
-        preserveScroll: true,
+// Watch for prop changes to update refs
+watch(() => props.filters, (newFilters) => {
+    search.value = newFilters.search || '';
+    status.value = newFilters.status || '';
+    date_from.value = newFilters.date_from || '';
+    date_to.value = newFilters.date_to || '';
+}, { deep: true });
+
+let searchTimeout = null;
+
+const applyFilters = () => {
+    const filterData = {};
+
+    if (search.value) filterData.search = search.value;
+    if (status.value) filterData.status = status.value;
+    if (date_from.value) filterData.date_from = date_from.value;
+    if (date_to.value) filterData.date_to = date_to.value;
+
+    router.get(route('transactions.index'), filterData, {
+        preserveState: false,
+        preserveScroll: false,
     });
-}
+};
 
-function clearFilters() {
-    filterForm.search = '';
-    filterForm.status = '';
-    router.get(route('transactions.index'));
-}
+const debounceSearch = () => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+    searchTimeout = setTimeout(() => {
+        applyFilters();
+    }, 500);
+};
 
-function formatDate(dateString) {
-    if (!dateString) return 'N/A';
-    return new Date(dateString).toLocaleString();
-}
+const clearSearch = () => {
+    search.value = '';
+    applyFilters();
+};
+
+const resetFilters = () => {
+    search.value = '';
+    status.value = '';
+    date_from.value = '';
+    date_to.value = '';
+    applyFilters();
+};
+
+const exportTransactions = () => {
+    const filterData = {};
+    if (search.value) filterData.search = search.value;
+    if (status.value) filterData.status = status.value;
+    if (date_from.value) filterData.date_from = date_from.value;
+    if (date_to.value) filterData.date_to = date_to.value;
+
+    const params = new URLSearchParams(filterData);
+    const url = route('transactions.index');
+    window.open(`${url}?${params.toString()}&export=csv`, '_blank');
+};
+
+const formatAmount = (amount) => {
+    return Number(amount).toLocaleString('en-US', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+    });
+};
+
+const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+    });
+};
+
+const formatStatus = (status) => {
+    return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
+};
+
+const getStatusClass = (status) => {
+    const statusMap = {
+        'completed': 'status-completed',
+        'pending': 'status-pending',
+        'failed': 'status-failed',
+        'processing': 'status-processing'
+    };
+    return statusMap[status] || 'status-pending';
+};
+
+// Cleanup timeout on unmount
+onUnmounted(() => {
+    if (searchTimeout) {
+        clearTimeout(searchTimeout);
+    }
+});
 </script>
 
 <style scoped>
-/* Page Layout */
-.page-title {
-    font-size: 1.25rem;
-    font-weight: 600;
-    line-height: 1.25;
-    color: #1f2937;
-}
-
-@media (prefers-color-scheme: dark) {
-    .page-title {
-        color: #e5e7eb;
-    }
-}
-
-.content-container {
-    padding: 3rem 0;
-}
-
-.content-wrapper {
-    max-width: 80rem;
-    margin: 0 auto;
-    padding: 0 1.5rem;
+.page-header {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
     gap: 1.5rem;
 }
 
-/* Card Styles */
-.card {
-    background-color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-    overflow: hidden;
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #0b1120;
+    margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-    .card {
-        background-color: #1f2937;
-    }
+.page-subtitle {
+    color: #64748b;
+    margin-top: 0.25rem;
+    font-size: 0.8125rem;
 }
 
-.card-body {
-    padding: 1.5rem;
+.btn-export {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: white;
+    border: 2px solid #dcb01d;
+    color: #dcb01d;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 0.875rem;
+    cursor: pointer;
 }
 
-/* Filter Form */
-.filter-form {
-    width: 100%;
+.btn-export:hover {
+    background: #dcb01d;
+    color: #0b1120;
 }
 
-.filter-row {
-    display: grid;
-    grid-template-columns: 1fr 200px auto;
+.btn-export .icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.content-wrapper {
+    display: flex;
+    flex-direction: column;
     gap: 1rem;
-    align-items: end;
 }
 
-@media (max-width: 768px) {
-    .filter-row {
-        grid-template-columns: 1fr;
-    }
+/* Filter Bar */
+.filter-bar {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr 1fr auto;
+    gap: 1rem;
+    padding: 1.25rem;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
 }
 
-.filter-field {
+.filter-bar:hover {
+    border-color: #dcb01d;
+}
+
+.filter-group {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
 }
 
+.search-group {
+    position: relative;
+}
+
 .filter-label {
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #374151;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #0b1120;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
-@media (prefers-color-scheme: dark) {
-    .filter-label {
-        color: #e5e7eb;
-    }
+.search-input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
 }
 
-.filter-input,
-.filter-select {
-    width: 100%;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.875rem;
-    background-color: white;
-    color: #1f2937;
+.search-icon {
+    position: absolute;
+    left: 0.875rem;
+    width: 1rem;
+    height: 1rem;
+    color: #9ca3af;
+    pointer-events: none;
 }
 
-@media (prefers-color-scheme: dark) {
-    .filter-input,
-    .filter-select {
-        background-color: #374151;
-        border-color: #4b5563;
-        color: #e5e7eb;
-    }
+.search-input {
+    padding-left: 2.75rem !important;
+    padding-right: 2.5rem !important;
 }
 
-.filter-input:focus,
-.filter-select:focus {
+.clear-btn {
+    position: absolute;
+    right: 0.625rem;
+    padding: 0.25rem;
+    background: #f3f4f6;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.clear-btn:hover {
+    background: #e5e7eb;
+}
+
+.clear-btn svg {
+    width: 1rem;
+    height: 1rem;
+    color: #6b7280;
+}
+
+.filter-select,
+.filter-input {
+    padding: 0.625rem 0.875rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    font-size: 0.8125rem;
+    color: #0b1120;
+    background: white;
+}
+
+.filter-select:focus,
+.filter-input:focus {
     outline: none;
-    border-color: #f97316;
-    ring: 2px;
-    ring-color: rgba(249, 115, 22, 0.1);
+    border-color: #dcb01d;
+}
+
+.filter-input::placeholder {
+    color: #9ca3af;
 }
 
 .filter-actions {
     display: flex;
+    align-items: flex-end;
+}
+
+.btn-reset {
+    display: flex;
+    align-items: center;
     gap: 0.5rem;
-}
-
-.btn-primary,
-.btn-secondary {
-    padding: 0.5rem 1rem;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
+    padding: 0.625rem 1rem;
+    background: white;
+    border: 1px solid #e5e7eb;
+    color: #6b7280;
+    border-radius: 6px;
     font-weight: 500;
+    font-size: 0.8125rem;
     cursor: pointer;
-    transition: all 0.15s;
+    white-space: nowrap;
 }
 
-.btn-primary {
-    background-color: #f97316;
-    color: white;
-    border: none;
+.btn-reset:hover {
+    border-color: #0b1120;
+    color: #0b1120;
 }
 
-.btn-primary:hover {
-    background-color: #ea580c;
+.btn-reset .icon {
+    width: 1rem;
+    height: 1rem;
 }
 
-.btn-secondary {
-    background-color: #f3f4f6;
-    color: #374151;
-    border: 1px solid #d1d5db;
+/* Table Section */
+.table-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
+    overflow: hidden;
 }
 
-@media (prefers-color-scheme: dark) {
-    .btn-secondary {
-        background-color: #374151;
-        color: #e5e7eb;
-        border-color: #4b5563;
-    }
-}
-
-.btn-secondary:hover {
-    background-color: #e5e7eb;
-}
-
-@media (prefers-color-scheme: dark) {
-    .btn-secondary:hover {
-        background-color: #4b5563;
-    }
-}
-
-/* Table Styles */
-.table-container {
+.table-wrapper {
     overflow-x: auto;
 }
 
@@ -356,191 +482,151 @@ function formatDate(dateString) {
     border-collapse: collapse;
 }
 
-.table-head {
-    background-color: #f9fafb;
-    border-bottom: 1px solid #e5e7eb;
+.data-table thead {
+    background: #fafafa;
+    border-bottom: 2px solid #dcb01d;
 }
 
-@media (prefers-color-scheme: dark) {
-    .table-head {
-        background-color: #374151;
-        border-color: #4b5563;
-    }
-}
-
-.table-header {
-    padding: 0.75rem 1rem;
+.data-table th {
+    padding: 0.75rem 1.25rem;
     text-align: left;
-    font-size: 0.75rem;
+    font-size: 0.6875rem;
     font-weight: 600;
+    color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.data-table th.text-right {
+    text-align: right;
+}
+
+.data-table tbody tr {
+    border-top: 1px solid #e5e7eb;
+}
+
+.data-table tbody tr:hover {
+    background: #fafafa;
+}
+
+.data-table td {
+    padding: 0.875rem 1.25rem;
+}
+
+.data-table td.text-right {
+    text-align: right;
+}
+
+/* Transaction ID */
+.transaction-id {
+    font-weight: 600;
+    color: #0b1120;
+    font-size: 0.8125rem;
+    font-family: ui-monospace, monospace;
+}
+
+/* Student Info */
+.student-name {
+    font-weight: 500;
+    color: #1e293b;
+    font-size: 0.8125rem;
+}
+
+.student-id {
+    font-size: 0.75rem;
     color: #6b7280;
+    font-family: ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-    .table-header {
-        color: #9ca3af;
-    }
-}
-
-.table-body {
-    background-color: white;
-}
-
-@media (prefers-color-scheme: dark) {
-    .table-body {
-        background-color: #1f2937;
-    }
-}
-
-.table-row {
-    border-bottom: 1px solid #f3f4f6;
-}
-
-@media (prefers-color-scheme: dark) {
-    .table-row {
-        border-color: #374151;
-    }
-}
-
-.table-row:hover {
-    background-color: #f9fafb;
-}
-
-@media (prefers-color-scheme: dark) {
-    .table-row:hover {
-        background-color: #374151;
-    }
-}
-
-.table-cell {
-    padding: 1rem;
-    font-size: 0.875rem;
-}
-
-.cell-primary {
-    color: #1f2937;
+.client-badge {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.75rem;
+    border-radius: 4px;
     font-weight: 500;
 }
 
-@media (prefers-color-scheme: dark) {
-    .cell-primary {
-        color: #e5e7eb;
-    }
+.amount-text {
+    font-weight: 700;
+    color: #059669;
+    font-size: 0.875rem;
 }
 
-.cell-secondary {
-    color: #6b7280;
+.date-text {
     font-size: 0.75rem;
-    margin-top: 0.25rem;
-}
-
-@media (prefers-color-scheme: dark) {
-    .cell-secondary {
-        color: #9ca3af;
-    }
+    color: #6b7280;
+    white-space: nowrap;
 }
 
 /* Status Badge */
 .status-badge {
-    display: inline-flex;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-}
-
-.status-green {
-    background-color: #d1fae5;
-    color: #065f46;
-}
-
-@media (prefers-color-scheme: dark) {
-    .status-green {
-        background-color: #064e3b;
-        color: #6ee7b7;
-    }
-}
-
-.status-yellow {
-    background-color: #fef3c7;
-    color: #92400e;
-}
-
-@media (prefers-color-scheme: dark) {
-    .status-yellow {
-        background-color: #78350f;
-        color: #fde68a;
-    }
-}
-
-.status-red {
-    background-color: #fee2e2;
-    color: #991b1b;
-}
-
-@media (prefers-color-scheme: dark) {
-    .status-red {
-        background-color: #7f1d1d;
-        color: #fca5a5;
-    }
-}
-
-.status-blue {
-    background-color: #dbeafe;
-    color: #1e40af;
-}
-
-@media (prefers-color-scheme: dark) {
-    .status-blue {
-        background-color: #1e3a8a;
-        color: #93c5fd;
-    }
-}
-
-/* Action Button */
-.btn-view {
     display: inline-block;
-    padding: 0.375rem 0.75rem;
-    background-color: #f97316;
-    color: white;
-    border-radius: 0.375rem;
+    padding: 0.1875rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: capitalize;
+}
+
+.status-completed {
+    background: white;
+    color: #065f46;
+    border: 1.5px solid #10b981;
+}
+
+.status-pending {
+    background: white;
+    color: #92400e;
+    border: 1.5px solid #fbbf24;
+}
+
+.status-processing {
+    background: white;
+    color: #1e3a8a;
+    border: 1.5px solid #3b82f6;
+}
+
+.status-failed {
+    background: white;
+    color: #991b1b;
+    border: 1.5px solid #ef4444;
+}
+
+/* Action Buttons */
+.btn-action {
+    padding: 0.375rem 0.875rem;
     font-size: 0.75rem;
     font-weight: 500;
+    border-radius: 6px;
     text-decoration: none;
-    transition: all 0.15s;
+    background: white;
+    color: #dcb01d;
+    border: 1px solid #dcb01d;
 }
 
-.btn-view:hover {
-    background-color: #ea580c;
+.btn-action:hover {
+    background: #dcb01d;
+    color: #0b1120;
 }
 
 /* Pagination */
 .pagination {
-    margin-top: 1.5rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-}
-
-@media (max-width: 768px) {
-    .pagination {
-        flex-direction: column;
-        gap: 1rem;
-    }
+    padding: 1rem 1.25rem;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .pagination-info {
-    font-size: 0.875rem;
+    font-size: 0.8125rem;
     color: #6b7280;
-}
-
-@media (prefers-color-scheme: dark) {
-    .pagination-info {
-        color: #9ca3af;
-    }
+    font-weight: 400;
 }
 
 .pagination-links {
@@ -548,63 +634,106 @@ function formatDate(dateString) {
     gap: 0.25rem;
 }
 
-.pagination-link {
-    padding: 0.5rem 0.75rem;
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-    color: #374151;
+.page-link {
+    padding: 0.375rem 0.625rem;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    color: #6b7280;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
     text-decoration: none;
-    transition: all 0.15s;
 }
 
-@media (prefers-color-scheme: dark) {
-    .pagination-link {
-        border-color: #4b5563;
-        color: #e5e7eb;
-    }
+.page-link:hover:not(.disabled):not(.active) {
+    color: #dcb01d;
+    border-color: #dcb01d;
 }
 
-.pagination-link:hover {
-    background-color: #f3f4f6;
+.page-link.active {
+    background: #dcb01d;
+    color: #0b1120;
+    border-color: #dcb01d;
+    font-weight: 600;
 }
 
-@media (prefers-color-scheme: dark) {
-    .pagination-link:hover {
-        background-color: #374151;
-    }
-}
-
-.pagination-active {
-    background-color: #f97316;
-    color: white;
-    border-color: #f97316;
-}
-
-.pagination-active:hover {
-    background-color: #ea580c;
-}
-
-.pagination-disabled {
+.page-link.disabled {
     opacity: 0.5;
     cursor: not-allowed;
     pointer-events: none;
 }
 
-.text-center {
+/* Empty State */
+.empty-state {
+    background: white;
+    border-radius: 12px;
+    padding: 3rem 2rem;
     text-align: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    border: 1px solid #e5e7eb;
 }
 
-.py-8 {
-    padding-top: 2rem;
-    padding-bottom: 2rem;
+.empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: rgba(220, 176, 29, 0.1);
+    margin-bottom: 1rem;
 }
 
-.text-gray-500 {
+.empty-icon svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #dcb01d;
+}
+
+.empty-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #0b1120;
+    margin: 0 0 0.5rem;
+}
+
+.empty-description {
     color: #6b7280;
+    margin: 0;
+    font-size: 0.875rem;
 }
 
-.text-xs {
-    font-size: 0.75rem;
+@media (max-width: 1200px) {
+    .filter-bar {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .search-group {
+        grid-column: span 2;
+    }
+
+    .filter-actions {
+        grid-column: span 2;
+        justify-content: flex-end;
+    }
+}
+
+@media (max-width: 768px) {
+    .filter-bar {
+        grid-template-columns: 1fr;
+    }
+
+    .search-group {
+        grid-column: span 1;
+    }
+
+    .filter-actions {
+        grid-column: span 1;
+    }
+
+    .page-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 }
 </style>

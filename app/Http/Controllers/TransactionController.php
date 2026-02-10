@@ -20,24 +20,36 @@ class TransactionController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Search by student name, email, phone, or reference
+        // Search by transaction number, student name, email, phone, or reference
         if ($request->has('search') && $request->search !== '') {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('student_name', 'LIKE', "%{$search}%")
+                $q->where('id', 'LIKE', "%{$search}%")
+                  ->orWhere('transaction_number', 'LIKE', "%{$search}%")
+                  ->orWhere('student_name', 'LIKE', "%{$search}%")
                   ->orWhere('student_id', 'LIKE', "%{$search}%")
                   ->orWhere('customer_email', 'LIKE', "%{$search}%")
                   ->orWhere('customer_phone', 'LIKE', "%{$search}%")
                   ->orWhere('client_ref', 'LIKE', "%{$search}%")
-                  ->orWhere('reference', 'LIKE', "%{$search}%");
+                  ->orWhere('reference', 'LIKE', "%{$search}%")
+                  ->orWhere('reqid', 'LIKE', "%{$search}%");
             });
+        }
+
+        // Filter by date range
+        if ($request->has('date_from') && $request->date_from !== '') {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+
+        if ($request->has('date_to') && $request->date_to !== '') {
+            $query->whereDate('created_at', '<=', $request->date_to);
         }
 
         $transactions = $query->paginate(20)->withQueryString();
 
         return Inertia::render('Admin/Pages/Transactions/Index', [
             'transactions' => $transactions,
-            'filters' => $request->only(['search', 'status']),
+            'filters' => $request->only(['search', 'status', 'date_from', 'date_to']),
         ]);
     }
 
@@ -47,7 +59,7 @@ class TransactionController extends Controller
     public function show(Transaction $transaction)
     {
         $transaction->load('client');
-        
+
         return Inertia::render('Admin/Pages/Transactions/Show', [
             'transaction' => $transaction,
         ]);

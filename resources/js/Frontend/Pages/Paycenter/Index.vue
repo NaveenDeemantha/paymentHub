@@ -60,7 +60,7 @@
                     <div class="form-header">
                         <div class="merchant-info">
                             <div class="merchant-logo">
-                                <svg class="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>
+                                <img src="/images/sampath-bank-logo.png" alt="Sampath Bank" class="merchant-logo-img">
                             </div>
                             <div>
                                 <h2 class="merchant-name">Sampath Bank</h2>
@@ -472,14 +472,20 @@ onMounted(() => {
 }
 
 .merchant-logo {
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 5rem;
+    height: 3rem;
     border-radius: 0.5rem;
     background-color: #fff7ed;
-    border: 1px solid #ffedd5;
+    /* border: 1px solid #ffedd5; */
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+.merchant-logo-img {
+    width: 5rem;
+    height: 3rem;
+    object-fit: contain;
 }
 
 .merchant-name {

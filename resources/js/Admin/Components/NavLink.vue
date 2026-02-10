@@ -29,13 +29,14 @@ const classes = computed(() =>
 .nav-link {
     display: inline-flex;
     align-items: center;
-    padding: 0 0.25rem;
-    padding-top: 0.25rem;
-    border-bottom-width: 2px;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
     font-size: 0.875rem;
-    font-weight: 500;
+    font-weight: 600;
     line-height: 1.25rem;
-    transition: all 0.15s ease-in-out;
+    transition: all 0.2s ease-in-out;
+    border-radius: 10px;
+    text-decoration: none;
 }
 
 .nav-link:focus {
@@ -43,48 +44,27 @@ const classes = computed(() =>
 }
 
 .active {
-    border-color: #818cf8;
-    color: #111827;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    box-shadow: 0 4px 6px -1px rgba(102, 126, 234, 0.4);
 }
 
-.active:focus {
-    border-color: #4338ca;
+.active:hover {
+    box-shadow: 0 6px 8px -1px rgba(102, 126, 234, 0.5);
 }
 
 .inactive {
-    border-color: transparent;
     color: #6b7280;
+    background: transparent;
 }
 
 .inactive:hover {
-    color: #374151;
-    border-color: #d1d5db;
+    color: #1f2937;
+    background: rgba(99, 102, 241, 0.1);
 }
 
 .inactive:focus {
-    color: #374151;
-    border-color: #d1d5db;
-}
-
-@media (prefers-color-scheme: dark) {
-    .active {
-        border-color: #4f46e5;
-        color: #f3f4f6;
-    }
-    .active:focus {
-        border-color: #6366f1;
-    }
-
-    .inactive {
-        color: #9ca3af;
-    }
-    .inactive:hover {
-        color: #d1d5db;
-        border-color: #374151;
-    }
-    .inactive:focus {
-        color: #d1d5db;
-        border-color: #374151;
-    }
+    color: #1f2937;
+    background: rgba(99, 102, 241, 0.1);
 }
 </style>

@@ -26,9 +26,15 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', function () {
         $stats = [
             'total_clients' => Client::count(),
-            'total_transactions' => Transaction::count(),
+            'total_transactions' => Transaction::whereDate('created_at', today())->count(),
             'completed_transactions' => Transaction::where('status', 'completed')->count(),
-            'total_amount' => number_format(Transaction::where('status', 'completed')->sum('amount') ?? 0, 2),
+            'pending_transactions' => Transaction::where('status', 'pending')->count(),
+            'processing_transactions' => Transaction::where('status', 'processing')->count(),
+            'failed_transactions' => Transaction::where('status', 'failed')->count(),
+            'total_amount_lkr' => number_format(Transaction::where('status', 'completed')->where('currency', 'LKR')->sum('amount') ?? 0, 2),
+            'total_amount_usd' => number_format(Transaction::where('status', 'completed')->where('currency', 'USD')->sum('amount') ?? 0, 2),
+            'today_total_amount_lkr' => number_format(Transaction::whereDate('created_at', today())->where('status', 'completed')->where('currency', 'LKR')->sum('amount') ?? 0, 2),
+            'today_total_amount_usd' => number_format(Transaction::whereDate('created_at', today())->where('status', 'completed')->where('currency', 'USD')->sum('amount') ?? 0, 2),
         ];
 
         $recentTransactions = Transaction::with('client')

@@ -1,12 +1,10 @@
 <template>
     <div class="page-container">
-        
-        <!-- LEFT PANEL: Brand & Trust -->
+
+
         <div class="brand-panel">
-            <!-- Background Enhancements -->
             <div class="brand-bg-gradient"></div>
             <div class="brand-glow"></div>
-
             <div class="brand-content">
                 <!-- Brand Identity -->
                 <div class="brand-header">
@@ -40,7 +38,7 @@
 
         <!-- RIGHT PANEL: Action -->
         <div class="action-panel">
-            
+
             <!-- Top Bar -->
             <div class="top-nav">
                 <div class="nav-links">
@@ -52,21 +50,19 @@
 
             <!-- Content Container -->
             <div class="content-wrapper">
-                
+
                 <h2 class="section-title">Select Payment Method</h2>
 
                 <div class="cards-grid">
-                    
+
                     <!-- SAMPATH CARD -->
                     <Link :href="route('pay.index')" class="payment-card group active-card">
                         <div class="status-badge online">
                             <span class="status-dot animate-pulse"></span> ONLINE
                         </div>
-                        
-                        <div class="card-icon-wrapper">
-                             <svg class="card-icon text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                            </svg>
+
+                        <div class="card-logo-wrapper">
+                             <img src="/images/sampath-bank-logo.png" alt="Sampath Bank" class="card-logo">
                         </div>
 
                         <div class="card-content">
@@ -84,11 +80,9 @@
                         <div class="status-badge soon">
                             SOON
                         </div>
-                        
-                        <div class="card-icon-wrapper grayscale">
-                             <svg class="card-icon text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                            </svg>
+
+                        <div class="card-logo-wrapper">
+                             <img src="/images/commercial-bank-logo.png" alt="Commercial Bank" class="card-logo">
                         </div>
 
                         <div class="card-content">
@@ -513,25 +507,23 @@ defineProps({
     background-color: #22c55e;
 }
 
-.card-icon-wrapper {
-    width: 4rem;
-    height: 4rem;
-    border-radius: 9999px;
-    background-color: #f8fafc;
-    border: 1px solid #f1f5f9;
+.card-logo-wrapper {
     display: flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.3s ease;
+    padding: 0;
+    margin: 0;
 }
 
-.active-card:hover .card-icon-wrapper {
-    transform: scale(1.1);
+.active-card:hover .card-logo-wrapper {
+    transform: scale(1.05);
 }
 
-.card-icon {
-    width: 2rem;
-    height: 2rem;
+.card-logo {
+    width: 10rem;
+    height: 8rem;
+    object-fit: contain;
 }
 
 .card-content {
