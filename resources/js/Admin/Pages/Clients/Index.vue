@@ -1,118 +1,113 @@
 <template>
-    <Head title="Client Management" />
+    <Head title="Clients" />
 
     <AuthenticatedLayout>
         <template #header>
-            <div class="header-container">
-                <h2 class="page-title">
-                    Client Management
-                </h2>
-                <Link 
-                    :href="route('clients.create')" 
-                    class="btn-primary"
-                >
-                    + Add Client
+            <div class="page-header">
+                <div>
+                    <h1 class="page-title">Client Management</h1>
+                    <p class="page-subtitle">Manage websites using your payment gateway</p>
+                </div>
+                <Link :href="route('clients.create')" class="btn-primary">
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Add Client
                 </Link>
             </div>
         </template>
 
-        <div class="content-container">
-            <div class="content-wrapper">
-                <div class="card">
-                    <div class="card-body">
-                        <div v-if="clients.data && clients.data.length > 0" class="table-container">
-                            <table class="data-table">
-                                <thead class="table-head">
-                                    <tr>
-                                        <th class="table-header">Name</th>
-                                        <th class="table-header">Domain</th>
-                                        <th class="table-header">Status</th>
-                                        <th class="table-header">Transactions</th>
-                                        <th class="table-header">Created</th>
-                                        <th class="table-header align-right">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="table-body">
-                                    <tr v-for="client in clients.data" :key="client.id" class="table-row">
-                                        <td class="table-cell">
-                                            <div class="cell-primary">
-                                                {{ client.name }}
-                                            </div>
-                                        </td>
-                                        <td class="table-cell">
-                                            <div class="cell-secondary">
-                                                {{ client.domain }}
-                                            </div>
-                                        </td>
-                                        <td class="table-cell">
-                                            <span 
-                                                :class="client.is_active ? 'status-active' : 'status-inactive'"
-                                            >
-                                                {{ client.is_active ? 'Active' : 'Inactive' }}
-                                            </span>
-                                        </td>
-                                        <td class="table-cell cell-secondary">
-                                            {{ client.transactions_count || 0 }}
-                                        </td>
-                                        <td class="table-cell cell-secondary">
-                                            {{ new Date(client.created_at).toLocaleDateString() }}
-                                        </td>
-                                        <td class="table-cell align-right">
-                                            <Link 
-                                                :href="route('clients.show', client.id)" 
-                                                class="action-link link-view"
-                                            >
-                                                View
-                                            </Link>
-                                            <Link 
-                                                :href="route('clients.edit', client.id)" 
-                                                class="action-link link-edit"
-                                            >
-                                                Edit
-                                            </Link>
-                                        </td>
-                                    </tr>
-                                </tbody>
-                            </table>
+        <div class="content-wrapper">
+            <div v-if="clients.data && clients.data.length > 0" class="table-section">
+                <div class="table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Client</th>
+                                <th>Domain</th>
+                                <th>Status</th>
+                                <th>Transactions</th>
+                                <th>Created</th>
+                                <th class="text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="client in clients.data" :key="client.id">
+                                <td>
+                                    <div class="client-info">
+                                        <div class="client-avatar">
+                                            {{ client.name.charAt(0).toUpperCase() }}
+                                        </div>
+                                        <div>
+                                            <div class="client-name">{{ client.name }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="domain-badge">{{ client.domain }}</span>
+                                </td>
+                                <td>
+                                    <span :class="['status-badge', client.is_active ? 'status-active' : 'status-inactive']">
+                                        {{ client.is_active ? 'Active' : 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="transaction-count">{{ client.transactions_count || 0 }}</span>
+                                </td>
+                                <td>
+                                    <span class="date-text">{{ formatDate(client.created_at) }}</span>
+                                </td>
+                                <td class="text-right">
+                                    <div class="action-buttons">
+                                        <Link :href="route('clients.show', client.id)" class="btn-action btn-view">
+                                            View
+                                        </Link>
+                                        <Link :href="route('clients.edit', client.id)" class="btn-action btn-edit">
+                                            Edit
+                                        </Link>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
 
-                            <!-- Pagination -->
-                            <div v-if="clients.links && clients.links.length > 3" class="pagination-container">
-                                <div class="pagination-info">
-                                    Showing {{ clients.from }} to {{ clients.to }} of {{ clients.total }} clients
-                                </div>
-                                <div class="pagination-links">
-                                    <Link 
-                                        v-for="link in clients.links" 
-                                        :key="link.label"
-                                        :href="link.url"
-                                        :class="[
-                                            'pagination-item',
-                                            link.active ? 'pagination-active' : 'pagination-inactive',
-                                            !link.url && 'pagination-disabled'
-                                        ]"
-                                        v-html="link.label"
-                                    />
-                                </div>
-                            </div>
-                        </div>
-
-                        <div v-else class="empty-state">
-                            <svg class="empty-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                            </svg>
-                            <h3 class="empty-title">No clients</h3>
-                            <p class="empty-description">Get started by creating a new client.</p>
-                            <div class="empty-action">
-                                <Link 
-                                    :href="route('clients.create')" 
-                                    class="btn-primary"
-                                >
-                                    + Add Your First Client
-                                </Link>
-                            </div>
-                        </div>
+                <!-- Pagination -->
+                <div v-if="clients.links && clients.links.length > 3" class="pagination">
+                    <div class="pagination-info">
+                        Showing {{ clients.from }} to {{ clients.to }} of {{ clients.total }} clients
+                    </div>
+                    <div class="pagination-links">
+                        <Link
+                            v-for="link in clients.links"
+                            :key="link.label"
+                            :href="link.url"
+                            :class="[
+                                'page-link',
+                                link.active && 'active',
+                                !link.url && 'disabled'
+                            ]"
+                            v-html="link.label"
+                        />
                     </div>
                 </div>
+            </div>
+
+            <!-- Empty State -->
+            <div v-else class="empty-state">
+                <div class="empty-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                </div>
+                <h3 class="empty-title">No clients yet</h3>
+                <p class="empty-description">Get started by creating your first client website.</p>
+                <Link :href="route('clients.create')" class="btn-primary">
+                    <svg class="btn-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    Add Your First Client
+                </Link>
             </div>
         </div>
     </AuthenticatedLayout>
@@ -125,272 +120,232 @@ import { Head, Link } from '@inertiajs/vue3';
 defineProps({
     clients: Object,
 });
+
+const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+    });
+};
 </script>
 
 <style scoped>
-/* Header */
-.header-container {
+.page-header {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1.5rem;
 }
 
 .page-title {
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     font-weight: 600;
-    line-height: 1.25;
     color: #1f2937;
+    margin: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-    .page-title {
-        color: #e5e7eb;
-    }
+.page-subtitle {
+    color: #6b7280;
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
 }
 
 .btn-primary {
     display: inline-flex;
     align-items: center;
-    padding: 0.5rem 1rem;
-    background-color: #4f46e5;
-    border: 1px solid transparent;
-    border-radius: 0.375rem;
-    font-weight: 600;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: #2c3e50;
+    color: white;
+    font-weight: 500;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: all 0.2s;
     font-size: 0.875rem;
-    color: #ffffff;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    cursor: pointer;
-    transition: background-color 0.15s ease-in-out;
 }
 
 .btn-primary:hover {
-    background-color: #4338ca;
+    background: #34495e;
 }
 
-.btn-primary:focus {
-    outline: none;
-    box-shadow: 0 0 0 2px #ffffff, 0 0 0 4px #4f46e5;
-}
-
-/* Content Layout */
-.content-container {
-    padding: 3rem 0;
+.btn-icon {
+    width: 1.125rem;
+    height: 1.125rem;
 }
 
 .content-wrapper {
-    max-width: 80rem;
-    margin: 0 auto;
-    padding: 0 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
 }
 
-@media (min-width: 640px) {
-    .content-wrapper {
-        padding: 0 2rem;
-    }
-}
-
-/* Card */
-.card {
-    background-color: #ffffff;
+/* Table Section */
+.table-section {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
     overflow: hidden;
-    box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-    border-radius: 0.5rem;
 }
 
-@media (prefers-color-scheme: dark) {
-    .card {
-        background-color: #1f2937;
-    }
-}
-
-.card-body {
-    padding: 1.5rem;
-}
-
-/* Data Table */
-.table-container {
+.table-wrapper {
     overflow-x: auto;
 }
 
 .data-table {
-    min-width: 100%;
+    width: 100%;
     border-collapse: collapse;
 }
 
-.table-head {
-    background-color: #f9fafb;
+.data-table thead {
+    background: #f9fafb;
 }
 
-@media (prefers-color-scheme: dark) {
-    .table-head {
-        background-color: #111827;
-    }
-}
-
-.table-header {
-    padding: 0.75rem 1.5rem;
+.data-table th {
+    padding: 0.875rem 1.5rem;
     text-align: left;
     font-size: 0.75rem;
-    font-weight: 500;
+    font-weight: 600;
     color: #6b7280;
     text-transform: uppercase;
     letter-spacing: 0.05em;
 }
 
-@media (prefers-color-scheme: dark) {
-    .table-header {
-        color: #9ca3af;
-    }
-}
-
-.align-right {
+.data-table th.text-right {
     text-align: right;
 }
 
-.table-body {
-    background-color: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-    .table-body {
-        background-color: #1f2937;
-    }
-}
-
-.table-row {
+.data-table tbody tr {
     border-top: 1px solid #e5e7eb;
     transition: background-color 0.15s;
 }
 
-@media (prefers-color-scheme: dark) {
-    .table-row {
-        border-color: #374151;
-    }
+.data-table tbody tr:hover {
+    background: #f9fafb;
 }
 
-.table-row:hover {
-    background-color: #f9fafb;
-}
-
-@media (prefers-color-scheme: dark) {
-    .table-row:hover {
-        background-color: #374151;
-    }
-}
-
-.table-cell {
+.data-table td {
     padding: 1rem 1.5rem;
-    white-space: nowrap;
 }
 
-.cell-primary {
-    font-size: 0.875rem;
+.data-table td.text-right {
+    text-align: right;
+}
+
+/* Client Info */
+.client-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.client-avatar {
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 8px;
+    background: #2c3e50;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    flex-shrink: 0;
+}
+
+.client-name {
     font-weight: 500;
-    color: #111827;
-}
-
-@media (prefers-color-scheme: dark) {
-    .cell-primary {
-        color: #f3f4f6;
-    }
-}
-
-.cell-secondary {
+    color: #1f2937;
     font-size: 0.875rem;
+}
+
+.domain-badge {
+    display: inline-block;
+    padding: 0.375rem 0.75rem;
+    background: #f3f4f6;
+    color: #6b7280;
+    font-size: 0.8125rem;
+    border-radius: 4px;
+    font-family: monospace;
+}
+
+.transaction-count {
+    font-weight: 600;
+    color: #1f2937;
+    font-size: 0.875rem;
+}
+
+.date-text {
+    font-size: 0.8125rem;
     color: #6b7280;
 }
 
-@media (prefers-color-scheme: dark) {
-    .cell-secondary {
-        color: #9ca3af;
-    }
-}
-
-/* Status Badges */
-.status-active,
-.status-inactive {
-    padding: 0.25rem 0.5rem;
-    display: inline-flex;
+/* Status Badge */
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.625rem;
+    border-radius: 4px;
     font-size: 0.75rem;
-    line-height: 1;
     font-weight: 600;
-    border-radius: 9999px;
 }
 
 .status-active {
-    background-color: #dcfce7;
-    color: #166534;
-}
-
-@media (prefers-color-scheme: dark) {
-    .status-active {
-        background-color: #14532d;
-        color: #dcfce7;
-    }
+    background: #d1fae5;
+    color: #065f46;
 }
 
 .status-inactive {
-    background-color: #fee2e2;
-    color: #991b1b;
+    background: #e5e7eb;
+    color: #4b5563;
 }
 
-@media (prefers-color-scheme: dark) {
-    .status-inactive {
-        background-color: #7f1d1d;
-        color: #fee2e2;
-    }
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
 }
 
-/* Action Links */
-.action-link {
-    font-size: 0.875rem;
+.btn-action {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
     font-weight: 500;
+    border-radius: 4px;
     text-decoration: none;
-    transition: color 0.15s;
+    transition: all 0.2s;
 }
 
-.link-view {
-    color: #4f46e5;
+.btn-view {
+    background: #f3f4f6;
+    color: #6b7280;
 }
 
-.link-view:hover {
-    color: #312e81;
+.btn-view:hover {
+    background: #e5e7eb;
+    color: #374151;
 }
 
-@media (prefers-color-scheme: dark) {
-    .link-view {
-        color: #818cf8;
-    }
-    .link-view:hover {
-        color: #a5b4fc;
-    }
+.btn-edit {
+    background: #dbeafe;
+    color: #2563eb;
 }
 
-.link-edit {
-    margin-left: 1rem;
-    color: #ca8a04;
-}
-
-.link-edit:hover {
-    color: #854d0e;
-}
-
-@media (prefers-color-scheme: dark) {
-    .link-edit {
-        color: #facc15;
-    }
-    .link-edit:hover {
-        color: #fde047;
-    }
+.btn-edit:hover {
+    background: #bfdbfe;
+    color: #1e40af;
 }
 
 /* Pagination */
-.pagination-container {
-    margin-top: 1rem;
+.pagination {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem 1.5rem;
+    border-top: 1px solid #e5e7eb;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
 .pagination-info {
@@ -398,93 +353,87 @@ defineProps({
     color: #6b7280;
 }
 
-@media (prefers-color-scheme: dark) {
-    .pagination-info {
-        color: #9ca3af;
-    }
-}
-
 .pagination-links {
     display: flex;
-    gap: 0.5rem;
+    gap: 0.25rem;
 }
 
-.pagination-item {
+.page-link {
     padding: 0.5rem 0.75rem;
     font-size: 0.875rem;
-    border-radius: 0.25rem;
+    font-weight: 500;
+    color: #6b7280;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 4px;
     text-decoration: none;
-    transition: background-color 0.15s;
+    transition: all 0.2s;
 }
 
-.pagination-active {
-    background-color: #4f46e5;
-    color: #ffffff;
-}
-
-.pagination-inactive {
-    background-color: #e5e7eb;
+.page-link:hover:not(.disabled):not(.active) {
+    background: #f9fafb;
     color: #374151;
 }
 
-.pagination-inactive:hover {
-    background-color: #d1d5db;
+.page-link.active {
+    background: #2c3e50;
+    color: white;
+    border-color: #2c3e50;
 }
 
-@media (prefers-color-scheme: dark) {
-    .pagination-inactive {
-        background-color: #374151;
-        color: #d1d5db;
-    }
-    .pagination-inactive:hover {
-        background-color: #4b5563;
-    }
-}
-
-.pagination-disabled {
+.page-link.disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 /* Empty State */
 .empty-state {
+    background: white;
+    border-radius: 12px;
+    padding: 4rem 2rem;
     text-align: center;
-    padding: 3rem 0;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
 }
 
 .empty-icon {
-    margin: 0 auto;
-    height: 3rem;
-    width: 3rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 4rem;
+    height: 4rem;
+    border-radius: 50%;
+    background: #f3f4f6;
+    margin-bottom: 1.5rem;
+}
+
+.empty-icon svg {
+    width: 2rem;
+    height: 2rem;
     color: #9ca3af;
 }
 
 .empty-title {
-    margin-top: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #111827;
-}
-
-@media (prefers-color-scheme: dark) {
-    .empty-title {
-        color: #f3f4f6;
-    }
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 0.5rem;
 }
 
 .empty-description {
-    margin-top: 0.25rem;
-    font-size: 0.875rem;
     color: #6b7280;
+    margin: 0 0 2rem;
+    font-size: 0.9375rem;
 }
 
-@media (prefers-color-scheme: dark) {
-    .empty-description {
-        color: #9ca3af;
+@media (max-width: 768px) {
+    .action-buttons {
+        flex-direction: column;
+        align-items: stretch;
     }
-}
 
-.empty-action {
-    margin-top: 1.5rem;
+    .btn-action {
+        text-align: center;
+    }
 }
 </style>

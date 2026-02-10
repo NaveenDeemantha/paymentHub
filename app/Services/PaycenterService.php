@@ -49,6 +49,29 @@ class PaycenterService
     }
 
     /**
+     * Convert amount to smallest currency unit (cents/paisa)
+     * This is required by the Paycenter API, similar to Stripe, PayPal, etc.
+     * 
+     * @param float $amount The amount in major currency unit (e.g., 100.50 LKR)
+     * @param string $currency Currency code
+     * @return int Amount in smallest unit (e.g., 10050 paisa)
+     */
+    protected function toSmallestUnit(float $amount, string $currency): int
+    {
+        // Define decimal places for each currency
+        // Most currencies use 2 decimal places, but some use 0 (JPY, KRW) or 3 (KWD)
+        $decimalPlaces = match ($currency) {
+            'JPY', 'KRW' => 0,  // Japanese Yen, Korean Won - no decimals
+            'KWD', 'BHD', 'OMR' => 3,  // Kuwaiti Dinar, Bahraini Dinar, Omani Rial - 3 decimals
+            default => 2,  // LKR, USD, EUR, GBP, etc. - 2 decimals
+        };
+
+        // Convert to smallest unit by multiplying by 10^decimalPlaces
+        // Example: 100.50 LKR * 100 = 10050 paisa
+        return (int) round($amount * pow(10, $decimalPlaces));
+    }
+
+    /**
      * Initiate a payment request using Hosted Redirect Method
      * This will return a redirect URL to Paycenter's hosted payment page
      *
@@ -62,6 +85,10 @@ class PaycenterService
         $currency = $data['currency'] ?? 'LKR';
         $clientId = $this->getClientId($currency);
 
+        // Convert amount to smallest currency unit (cents/paisa)
+        // The API expects amounts in smallest unit, e.g., 100.50 LKR = 10050 paisa
+        $amountInSmallestUnit = $this->toSmallestUnit((float) $data['amount'], $currency);
+
         $payload = [
             'version' => '1.5',
             'operation' => 'PAYMENT_INIT',
@@ -70,7 +97,7 @@ class PaycenterService
                 'clientId' => (int) $clientId,
                 'transactionType' => 'PURCHASE',
                 'transactionAmount' => [
-                    'paymentAmount' => (float) $data['amount'],
+                    'paymentAmount' => $amountInSmallestUnit,
                     'currency' => $currency,
                 ],
                 'redirect' => [
