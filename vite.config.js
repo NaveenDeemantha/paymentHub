@@ -18,6 +18,7 @@ export default defineConfig({
         }),
     ],
     build: {
+        chunkSizeWarningLimit: 600, // Increase limit to 600kb for charts
         rollupOptions: {
             output: {
                 manualChunks: {
