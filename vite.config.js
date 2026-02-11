@@ -18,7 +18,6 @@ export default defineConfig({
         }),
     ],
     build: {
-        chunkSizeWarningLimit: 600, // Increase limit to 600kb for charts
         rollupOptions: {
             output: {
                 manualChunks: {
@@ -26,6 +25,7 @@ export default defineConfig({
                     charts: ['vue3-apexcharts', 'apexcharts'],
                 }
             }
-        }
+        },
+        outDir: 'public/build',
     }
 });
