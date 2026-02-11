@@ -213,8 +213,22 @@
 <script setup>
 import AuthenticatedLayout from '@/Admin/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref } from 'vue';
-import VueApexCharts from 'vue3-apexcharts';
+import { computed, ref, defineAsyncComponent } from 'vue';
+
+// Lazy load the charts component
+const VueApexCharts = defineAsyncComponent({
+    loader: () => import('vue3-apexcharts'),
+    loadingComponent: {
+        template: `
+            <div class="chart-loading">
+                <div class="loading-spinner"></div>
+                <p>Loading chart...</p>
+            </div>
+        `
+    },
+    delay: 200,
+    timeout: 3000
+});
 
 const props = defineProps({
     stats: Object,
@@ -963,5 +977,37 @@ const statusChartSeries = computed(() => [
     .welcome-text {
         font-size: 1.75rem;
     }
+}
+
+/* Chart Loading Styles */
+.chart-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+    padding: 2rem;
+    color: #64748b;
+}
+
+.loading-spinner {
+    width: 32px;
+    height: 32px;
+    border: 2px solid #e2e8f0;
+    border-top: 2px solid #4f46e5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.chart-loading p {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
 }
 </style>
