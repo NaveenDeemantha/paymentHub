@@ -27,5 +27,7 @@ export default defineConfig({
             }
         },
         outDir: 'public/build',
-    }
+        emptyOutDir: true,
+    },
+    base: process.env.NODE_ENV === 'production' ? '/build/' : '',
 });
