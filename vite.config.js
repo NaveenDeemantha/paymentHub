@@ -7,6 +7,8 @@ export default defineConfig({
         laravel({
             input: 'resources/js/app.js',
             refresh: true,
+            publicDirectory: 'public',
+            buildDirectory: 'build',
         }),
         vue({
             template: {
@@ -26,8 +28,7 @@ export default defineConfig({
                 }
             }
         },
-        outDir: 'public/build',
+        outDir: 'build',
         emptyOutDir: true,
     },
-    base: process.env.NODE_ENV === 'production' ? '/build/' : '',
 });
