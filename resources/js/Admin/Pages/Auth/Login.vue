@@ -225,6 +225,12 @@ const submit = () => {
     justify-content: center;
     width: 100px;
     height: 130px;
+
+
+
+
+
+    
     /* background: linear-gradient(135deg, #012749, #1e3a5f); */
     /* border-radius: 12px; */
     /* color: #dcb01d; */
