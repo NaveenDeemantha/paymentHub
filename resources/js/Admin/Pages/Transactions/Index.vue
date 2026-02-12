@@ -17,8 +17,10 @@
             </div>
         </template>
 
+
+
         <div class="content-wrapper">
-            <!-- Filter Bar -->
+
             <div class="filter-bar">
                 <div class="filter-group search-group">
                     <label class="filter-label">Search</label>
