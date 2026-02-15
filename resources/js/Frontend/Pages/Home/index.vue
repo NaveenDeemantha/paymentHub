@@ -10,7 +10,7 @@
                 <div class="brand-header">
                      <div class="brand-logo-wrapper">
                         <div class="brand-logo-icon">
-                            <img src="/images/winfield-logo.png" alt="Winfield Logo" class="logo-image">
+                            <img :src="'/images/' + 'winfield-logo.png'" alt="Winfield Logo" class="logo-image">
                         </div>
                         <span class="brand-name">PayCenter</span>
                     </div>
@@ -62,7 +62,7 @@
                         </div>
 
                         <div class="card-logo-wrapper">
-                             <img src="/images/sampath-bank-logo.png" alt="Sampath Bank" class="card-logo">
+                             <img :src="'/images/' + 'sampath-bank-logo.png'" alt="Sampath Bank" class="card-logo">
                         </div>
 
                         <div class="card-content">
@@ -82,7 +82,7 @@
                         </div>
 
                         <div class="card-logo-wrapper">
-                             <img src="/images/commercial-bank-logo.png" alt="Commercial Bank" class="card-logo">
+                             <img :src="'/images/' + 'commercial-bank-logo.png'" alt="Commercial Bank" class="card-logo">
                         </div>
 
                         <div class="card-content">
@@ -140,12 +140,12 @@ defineProps({
 /* --- Left Panel: Brand --- */
 .brand-panel {
     width: 100%;
-    height: 30vh;
+    height: 35vh;
     position: relative;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 2rem;
+    padding: 1rem;
     color: white;
     background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
     background-size: 30px 30px;
@@ -207,8 +207,15 @@ defineProps({
 .brand-logo-wrapper {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    margin-bottom: 1.5rem;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+    .brand-logo-wrapper {
+        gap: 0.75rem;
+        margin-bottom: 1.5rem;
+    }
 }
 
 /* .brand-logo-icon {
@@ -221,14 +228,28 @@ defineProps({
 } */
 
 .logo-image {
-    width: 10rem;
-    height: 10rem;
+    width: 3rem;
+    height: 3rem;
     object-fit: contain;
+}
+
+@media (min-width: 768px) {
+    .logo-image {
+        width: 4rem;
+        height: 4rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .logo-image {
+        width: 5rem;
+        height: 5rem;
+    }
 }
 
 
 .brand-name {
-    font-size: 1.25rem;
+    font-size: 1rem;
     font-weight: 700;
     letter-spacing: -0.025em;
     background: linear-gradient(to right, #ffffff, #94a3b8);
@@ -238,14 +259,27 @@ defineProps({
     animation: fadeIn 1s ease-out;
 }
 
+@media (min-width: 768px) {
+    .brand-name {
+        font-size: 1.25rem;
+    }
+}
+
 .hero-title {
     font-family: 'Merriweather', serif;
-    font-size: 1.875rem;
+    font-size: 1.5rem;
     font-weight: 500;
     line-height: 1.25;
-    margin-bottom: 1rem;
+    margin-bottom: 0.75rem;
     color: #ffffff;
     animation: slideInLeft 0.8s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (min-width: 640px) {
+    .hero-title {
+        font-size: 1.875rem;
+        margin-bottom: 1rem;
+    }
 }
 
 @media (min-width: 768px) {
@@ -260,11 +294,19 @@ defineProps({
 
 .hero-subtitle {
     color: #94a3b8;
-    font-size: 0.875rem;
-    max-width: 24rem;
+    font-size: 0.75rem;
+    max-width: 20rem;
     border-left: 2px solid #dcb01d;
-    padding-left: 1rem;
+    padding-left: 0.75rem;
     animation: slideInLeft 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s backwards;
+}
+
+@media (min-width: 640px) {
+    .hero-subtitle {
+        font-size: 0.875rem;
+        max-width: 24rem;
+        padding-left: 1rem;
+    }
 }
 
 @media (min-width: 768px) {
@@ -322,7 +364,7 @@ defineProps({
 /* --- Right Panel: Action --- */
 .action-panel {
     width: 100%;
-    height: 70vh;
+    height: 65vh;
     background-color: #f8fafc;
     position: relative;
     display: flex;
@@ -389,11 +431,17 @@ defineProps({
 
 .content-wrapper {
     flex: 1;
-    padding: 1.5rem;
+    padding: 1rem;
     overflow-y: auto;
     display: flex;
     flex-direction: column;
     justify-content: center;
+}
+
+@media (min-width: 640px) {
+    .content-wrapper {
+        padding: 1.5rem;
+    }
 }
 
 @media (min-width: 768px) {
@@ -409,12 +457,21 @@ defineProps({
 }
 
 .section-title {
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: #0b1120;
-    margin-bottom: 2rem;
+    margin-bottom: 1.5rem;
     font-family: 'Merriweather', serif;
     animation: fadeInUp 0.6s ease-out 0.3s backwards;
+    text-align: center;
+}
+
+@media (min-width: 640px) {
+    .section-title {
+        font-size: 1.5rem;
+        margin-bottom: 2rem;
+        text-align: left;
+    }
 }
 
 .cards-grid {
@@ -436,12 +493,12 @@ defineProps({
 .payment-card {
     position: relative;
     border-radius: 0.75rem;
-    padding: 1.5rem;
+    padding: 1rem;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 1.5rem;
+    gap: 1rem;
     transition: all 0.3s ease;
     text-decoration: none;
     animation: fadeInUp 0.6s ease-out 0.5s backwards;
@@ -450,6 +507,13 @@ defineProps({
 /* Stagger for second card */
 .payment-card:nth-child(2) {
     animation-delay: 0.7s;
+}
+
+@media (min-width: 640px) {
+    .payment-card {
+        padding: 1.5rem;
+        gap: 1.5rem;
+    }
 }
 
 @media (min-width: 768px) {
@@ -521,9 +585,23 @@ defineProps({
 }
 
 .card-logo {
-    width: 10rem;
-    height: 8rem;
+    width: 4rem;
+    height: 3rem;
     object-fit: contain;
+}
+
+@media (min-width: 640px) {
+    .card-logo {
+        width: 6rem;
+        height: 4rem;
+    }
+}
+
+@media (min-width: 1024px) {
+    .card-logo {
+        width: 8rem;
+        height: 5rem;
+    }
 }
 
 .card-content {
