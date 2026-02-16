@@ -14,7 +14,7 @@ createInertiaApp({
         const pages = import.meta.glob([
             './Admin/**/*.vue',
             './Frontend/**/*.vue'
-        ], { eager: true });
+        ]);
         return resolvePageComponent(`./${name}.vue`, pages);
     },
     setup({ el, App, props, plugin }) {
