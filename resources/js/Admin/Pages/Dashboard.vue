@@ -122,18 +122,75 @@
 
             <!-- Dashboard Grid: Chart and Recent Transactions -->
             <div class="dashboard-grid">
-                <!-- Payment Status Chart -->
-                <div class="chart-card">
+                <!-- Payment Status Overview -->
+                <div class="status-overview-card">
                     <div class="chart-header">
-                        <h3 class="chart-title">Payment Status</h3>
-                        <p class="chart-subtitle">Distribution overview</p>
+                        <h3 class="chart-title">Payment Status Distribution</h3>
+                        <p class="chart-subtitle">Transaction status overview</p>
                     </div>
-                    <VueApexCharts
-                        type="donut"
-                        height="320"
-                        :options="statusChartOptions"
-                        :series="statusChartSeries"
-                    />
+                    <div class="status-stats-grid">
+                        <div class="status-stat-item status-completed">
+                            <div class="status-stat-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="status-stat-content">
+                                <span class="status-stat-value">{{ chartData.completed }}</span>
+                                <span class="status-stat-label">Completed</span>
+                            </div>
+                        </div>
+
+                        <div class="status-stat-item status-pending">
+                            <div class="status-stat-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="status-stat-content">
+                                <span class="status-stat-value">{{ chartData.pending }}</span>
+                                <span class="status-stat-label">Pending</span>
+                            </div>
+                        </div>
+
+                        <div class="status-stat-item status-processing">
+                            <div class="status-stat-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                            </div>
+                            <div class="status-stat-content">
+                                <span class="status-stat-value">{{ chartData.processing }}</span>
+                                <span class="status-stat-label">Processing</span>
+                            </div>
+                        </div>
+
+                        <div class="status-stat-item status-failed">
+                            <div class="status-stat-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                            </div>
+                            <div class="status-stat-content">
+                                <span class="status-stat-value">{{ chartData.failed }}</span>
+                                <span class="status-stat-label">Failed</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="status-total-section">
+                        <div class="status-total-card">
+                            <div class="status-total-icon">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                            </div>
+                            <div class="status-total-content">
+                                <span class="status-total-value">{{ chartData.total.toLocaleString() }}</span>
+                                <span class="status-total-label">Total Transactions</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Recent Transactions -->
@@ -213,22 +270,7 @@
 <script setup>
 import AuthenticatedLayout from '@/Admin/Layouts/AuthenticatedLayout.vue';
 import { Head, Link } from '@inertiajs/vue3';
-import { computed, ref, defineAsyncComponent } from 'vue';
-
-// Lazy load the charts component
-const VueApexCharts = defineAsyncComponent({
-    loader: () => import('vue3-apexcharts'),
-    loadingComponent: {
-        template: `
-            <div class="chart-loading">
-                <div class="loading-spinner"></div>
-                <p>Loading chart...</p>
-            </div>
-        `
-    },
-    delay: 200,
-    timeout: 3000
-});
+import { computed } from 'vue';
 
 const props = defineProps({
     stats: Object,
@@ -609,9 +651,198 @@ const statusChartSeries = computed(() => [
 /* Dashboard Grid */
 .dashboard-grid {
     display: grid;
-    grid-template-columns: 400px 1fr;
-    gap: 1rem;
+    grid-template-columns: 420px 1fr;
+    gap: 1.5rem;
     margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+}
+
+/* Status Overview Card */
+.status-overview-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.status-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+@media (max-width: 640px) {
+    .status-stats-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.status-stat-item {
+    background: #fafafa;
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    border: 1px solid #f1f5f9;
+    transition: all 0.2s ease;
+}
+
+.status-stat-item:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.status-stat-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.status-stat-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.status-stat-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.status-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    line-height: 1;
+    color: #0b1120;
+}
+
+.status-stat-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Status Colors */
+.status-completed {
+    border-left: 3px solid #10b981;
+}
+
+.status-completed .status-stat-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+}
+
+.status-pending {
+    border-left: 3px solid #fbbf24;
+}
+
+.status-pending .status-stat-icon {
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+}
+
+.status-processing {
+    border-left: 3px solid #3b82f6;
+}
+
+.status-processing .status-stat-icon {
+    background: rgba(59, 130, 246, 0.1);
+    color: #3b82f6;
+}
+
+.status-failed {
+    border-left: 3px solid #ef4444;
+}
+
+.status-failed .status-stat-icon {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+}
+
+/* Status Total Section */
+.status-total-section {
+    border-top: 1px solid #e5e7eb;
+    padding-top: 1rem;
+}
+
+.status-total-card {
+    background: linear-gradient(135deg, #0b1120 0%, #1e293b 100%);
+    border-radius: 8px;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.status-total-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 100px;
+    height: 100px;
+    background: rgba(220, 176, 29, 0.1);
+    border-radius: 50%;
+    transform: translate(30%, -30%);
+}
+
+.status-total-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(220, 176, 29, 0.2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #dcb01d;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.status-total-icon svg {
+    width: 20px;
+    height: 20px;
+}
+
+.status-total-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    position: relative;
+    z-index: 1;
+}
+
+.status-total-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1;
+}
+
+.status-total-label {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .chart-card {

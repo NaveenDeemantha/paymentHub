@@ -60,7 +60,7 @@
                     <div class="form-header">
                         <div class="merchant-info">
                             <div class="merchant-logo">
-                                <img src="/images/sampath-bank-logo.png" alt="Sampath Bank" class="merchant-logo-img">
+                                <img :src="'/images/' + 'sampath-bank-logo.png'" alt="Sampath Bank" class="merchant-logo-img">
                             </div>
                             <div>
                                 <h2 class="merchant-name">Sampath Bank</h2>

@@ -8,7 +8,7 @@
             <div class="login-header">
                 <div class="logo-container">
                     <div class="logo-icon">
-                        <img src="/images/winfield-logo.png" alt="Winfield Logo" />
+                        <img :src="'/images/' + 'winfield-logo.png'" alt="Winfield Logo" />
                     </div>
                 </div>
                 <h1 class="login-title">PayCenter Admin</h1>
@@ -230,7 +230,7 @@ const submit = () => {
 
 
 
-    
+
     /* background: linear-gradient(135deg, #012749, #1e3a5f); */
     /* border-radius: 12px; */
     /* color: #dcb01d; */

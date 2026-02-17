@@ -164,6 +164,15 @@ class PayController extends Controller
                     'response_data' => $verification['data'],
                 ]);
 
+                // Sending Success Email
+                try {
+                    if ($transaction->customer_email) {
+                        \Illuminate\Support\Facades\Mail::to($transaction->customer_email)->send(new \App\Mail\PaymentStatusMail($transaction));
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to send payment success email', ['error' => $e->getMessage()]);
+                }
+
                 return Inertia::render('Frontend/Pages/Paycenter/Result', [
                     'success' => true,
                     'message' => 'Payment completed successfully!',
@@ -181,6 +190,15 @@ class PayController extends Controller
                     'payment_state' => $paymentStatus,
                     'response_data' => $verification['data'],
                 ]);
+
+                // Sending Failure Email
+                try {
+                    if ($transaction->customer_email) {
+                        \Illuminate\Support\Facades\Mail::to($transaction->customer_email)->send(new \App\Mail\PaymentStatusMail($transaction));
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to send payment failure email', ['error' => $e->getMessage()]);
+                }
 
                 return Inertia::render('Frontend/Pages/Paycenter/Result', [
                     'success' => false,
