@@ -119,3 +119,49 @@ Route::get('/test-mail', function () {
     // Use the actual mailable class
     return new \App\Mail\PaymentStatusMail($transaction);
 });
+
+// Test payment success callback simulation
+Route::get('/test-success-callback', function () {
+    // Create a test transaction
+    $transaction = \App\Models\Transaction::create([
+        'client_ref' => 'TEST-SUCCESS-' . time(),
+        'reqid' => 'TEST-REQID-' . uniqid(),
+        'amount' => 2500.00,
+        'currency' => 'LKR',
+        'status' => 'processing',
+        'customer_email' => 'test@example.com',
+        'customer_phone' => '+94777123456',
+        'student_name' => 'John Doe',
+        'student_id' => 'ST12345',
+        'program' => 'Computer Science',
+        'nic_passport' => '123456789V',
+        'description' => 'Test successful payment',
+        'initiated_at' => now(),
+    ]);
+
+    // Simulate successful callback
+    return redirect()->route('pay.callback', ['reqid' => $transaction->reqid]);
+});
+
+// Test payment failure callback simulation
+Route::get('/test-failure-callback', function () {
+    // Create a test transaction
+    $transaction = \App\Models\Transaction::create([
+        'client_ref' => 'TEST-FAILURE-' . time(),
+        'reqid' => 'TEST-REQID-FAIL-' . uniqid(),
+        'amount' => 1500.00,
+        'currency' => 'USD',
+        'status' => 'processing',
+        'customer_email' => 'test-fail@example.com',
+        'customer_phone' => '+94777654321',
+        'student_name' => 'Jane Smith',
+        'student_id' => 'ST67890',
+        'program' => 'Business Administration',
+        'nic_passport' => '987654321V',
+        'description' => 'Test failed payment',
+        'initiated_at' => now(),
+    ]);
+
+    // Simulate failed callback
+    return redirect()->route('pay.callback', ['reqid' => $transaction->reqid]);
+});
