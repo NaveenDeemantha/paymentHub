@@ -8,6 +8,31 @@ use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 use Inertia\Inertia;
 
+// Temporary test route for email - VERIFIED
+Route::get('/test-payment-email', function () {
+    try {
+        $transaction = new \App\Models\Transaction([
+            'client_ref' => 'TEST-' . time(),
+            'amount' => 5000.00,
+            'currency' => 'LKR',
+            'status' => 'completed',
+            'description' => 'Test Payment Transaction',
+        ]);
+
+        // Manually set attributes that aren't fillable or need improved mocking
+        $transaction->updated_at = now();
+        $transaction->created_at = now();
+
+        $email = 'naveenpunchihewa9@gmail.com';
+
+        \Illuminate\Support\Facades\Mail::to($email)->send(new \App\Mail\PaymentStatusMail($transaction));
+
+        return "Email sent successfully to $email";
+    } catch (\Exception $e) {
+        return "Error sending email: " . $e->getMessage();
+    }
+});
+
 // Public Landing Page with Bank Selection
 Route::get('/', function () {
     return Inertia::render('Frontend/Pages/Home/index');
@@ -31,10 +56,18 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
             'pending_transactions' => Transaction::where('status', 'pending')->count(),
             'processing_transactions' => Transaction::where('status', 'processing')->count(),
             'failed_transactions' => Transaction::where('status', 'failed')->count(),
-            'total_amount_lkr' => number_format(Transaction::where('status', 'completed')->where('currency', 'LKR')->sum('amount') ?? 0, 2),
-            'total_amount_usd' => number_format(Transaction::where('status', 'completed')->where('currency', 'USD')->sum('amount') ?? 0, 2),
-            'today_total_amount_lkr' => number_format(Transaction::whereDate('created_at', today())->where('status', 'completed')->where('currency', 'LKR')->sum('amount') ?? 0, 2),
-            'today_total_amount_usd' => number_format(Transaction::whereDate('created_at', today())->where('status', 'completed')->where('currency', 'USD')->sum('amount') ?? 0, 2),
+            'total_amount_lkr' => number_format(Transaction::where('status', 'completed')->where('currency', 'LKR')->sum('amount')
+                ?? 0, 2),
+            'total_amount_usd' => number_format(Transaction::where('status', 'completed')->where('currency', 'USD')->sum('amount')
+                ?? 0, 2),
+            'today_total_amount_lkr' => number_format(Transaction::whereDate('created_at', today())->where(
+                'status',
+                'completed'
+            )->where('currency', 'LKR')->sum('amount') ?? 0, 2),
+            'today_total_amount_usd' => number_format(Transaction::whereDate('created_at', today())->where(
+                'status',
+                'completed'
+            )->where('currency', 'USD')->sum('amount') ?? 0, 2),
         ];
 
         $recentTransactions = Transaction::with('client')
@@ -54,10 +87,35 @@ Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () {
 
     // Client Management
     Route::resource('clients', \App\Http\Controllers\ClientController::class);
-    Route::post('/clients/{client}/regenerate-api-key', [\App\Http\Controllers\ClientController::class, 'regenerateApiKey'])->name('clients.regenerate-api-key');
-    Route::post('/clients/{client}/regenerate-webhook-secret', [\App\Http\Controllers\ClientController::class, 'regenerateWebhookSecret'])->name('clients.regenerate-webhook-secret');
+    Route::post('/clients/{client}/regenerate-api-key', [
+        \App\Http\Controllers\ClientController::class,
+        'regenerateApiKey'
+    ])->name('clients.regenerate-api-key');
+    Route::post('/clients/{client}/regenerate-webhook-secret', [
+        \App\Http\Controllers\ClientController::class,
+        'regenerateWebhookSecret'
+    ])->name('clients.regenerate-webhook-secret');
 
     // Transaction Management
     Route::get('/transactions', [\App\Http\Controllers\TransactionController::class, 'index'])->name('transactions.index');
-    Route::get('/transactions/{transaction}', [\App\Http\Controllers\TransactionController::class, 'show'])->name('transactions.show');
+    Route::get('/transactions/{transaction}', [
+        \App\Http\Controllers\TransactionController::class,
+        'show'
+    ])->name('transactions.show');
+});
+
+// Temporary test route for email
+Route::get('/test-mail', function () {
+    $transaction = new \App\Models\Transaction([
+        'client_ref' => 'TEST-' . time(),
+        'amount' => 1250.00,
+        'currency' => 'LKR',
+        'status' => 'completed',
+        'customer_email' => 'navipunchihewa@gmail.com', // Replace with a valid email for testing if needed
+        'description' => 'Test Payment Transaction',
+        'updated_at' => now(),
+    ]);
+
+    // Use the actual mailable class
+    return new \App\Mail\PaymentStatusMail($transaction);
 });
