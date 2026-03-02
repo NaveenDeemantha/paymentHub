@@ -25,7 +25,13 @@
                     <span style="color: orange; font-weight: bold;">{{ strtoupper($transaction->status) }}</span>
                 @endif
             </p>
-            <p><strong>Date:</strong> {{ $transaction->updated_at->format('Y-m-d H:i:s') }}</p>
+            <p><strong>Date:</strong> 
+                @if($transaction->status === 'completed' && $transaction->completed_at)
+                    {{ $transaction->completed_at->format('d M Y, h:i A') }}
+                @else
+                    {{ $transaction->created_at->format('d M Y, h:i A') }}
+                @endif
+            </p>
         </div>
 
         @if($transaction->status === 'completed')

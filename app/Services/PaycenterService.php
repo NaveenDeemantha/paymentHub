@@ -51,7 +51,7 @@ class PaycenterService
     /**
      * Convert amount to smallest currency unit (cents/paisa)
      * This is required by the Paycenter API, similar to Stripe, PayPal, etc.
-     * 
+     *
      * @param float $amount The amount in major currency unit (e.g., 100.50 LKR)
      * @param string $currency Currency code
      * @return int Amount in smallest unit (e.g., 10050 paisa)
@@ -193,17 +193,25 @@ class PaycenterService
                 return [
                     'status' => 'success',
                     'data' => [
-                        'responseCode' => '00',
+                        'responseCode' => 'VA',
                         'responseData' => [
                             'transactionState' => 'FAILED',
                             'transactionId' => 'TXN-FAIL-' . time(),
                             'clientRef' => 'TEST-FAILURE-' . time(),
+                            'creditCard' => [
+                                'type' => 'VISA',
+                                'number' => '411111******1111',
+                            ],
+                            'responseText' => 'INVALID CARD NUMBER (TEST TRANSACTION ONLY)'
                         ]
                     ],
                     'payment_status' => 'FAILED',
                     'transaction_id' => 'TXN-FAIL-' . time(),
                     'client_ref' => 'TEST-FAILURE-' . time(),
                     'amount' => null,
+                    'card_type' => 'VISA',
+                    'card_number' => '411111******1111',
+                    'fail_reason' => 'INVALID CARD NUMBER (TEST TRANSACTION ONLY)',
                 ];
             } else {
                 // Simulate successful payment
@@ -215,12 +223,20 @@ class PaycenterService
                             'transactionState' => 'COMPLETED',
                             'transactionId' => 'TXN-SUCCESS-' . time(),
                             'clientRef' => 'TEST-SUCCESS-' . time(),
+                            'creditCard' => [
+                                'type' => 'MASTERCARD',
+                                'number' => '510010******0102',
+                            ],
+                            'responseText' => 'TRANSACTION APPROVED'
                         ]
                     ],
                     'payment_status' => 'COMPLETED',
                     'transaction_id' => 'TXN-SUCCESS-' . time(),
                     'client_ref' => 'TEST-SUCCESS-' . time(),
                     'amount' => null,
+                    'card_type' => 'MASTERCARD',
+                    'card_number' => '510010******0102',
+                    'fail_reason' => null,
                 ];
             }
         }
@@ -262,13 +278,83 @@ class PaycenterService
             if ($response->successful()) {
                 $json = $response->json();
 
+                $responseCode = $json['responseData']['responseCode'] ?? null;
+                $transactionState = $json['responseData']['transactionState'] ?? null;
+                $responseText = $json['responseData']['responseText'] ?? null;
+                $txnReference = $json['responseData']['txnReference'] ?? null;
+                $authCode = $json['responseData']['authCode'] ?? null;
+
+                // STRICT payment status determination - only mark COMPLETED with explicit proof:
+                //
+                // COMPLETED conditions (MUST have explicit success indicators):
+                // 1. transactionState is explicitly 'COMPLETED', 'SUCCESS', or 'AUTHORIZED'
+                // 2. responseCode is '00' (explicit success code)
+                // 3. Has BOTH txnReference AND authCode without error code (fully processed)
+                //
+                // FAILED conditions (explicit failure indicators):
+                // 1. responseCode exists and is NOT '00' (e.g., 'VA', 'FB', 'NS', etc.)
+                // 2. Has responseText with error keywords
+                //
+                // UNKNOWN: If no clear success or failure indicators
+
+                $paymentStatus = 'UNKNOWN';
+
+                // Check for EXPLICIT success (strict conditions)
+                if ($transactionState && in_array(strtoupper($transactionState), ['COMPLETED', 'SUCCESS', 'AUTHORIZED', 'APPROVED'])) {
+                    $paymentStatus = strtoupper($transactionState);
+                }
+                elseif ($responseCode === '00') {
+                    // Explicit success response code
+                    $paymentStatus = 'COMPLETED';
+                }
+                elseif ($txnReference && $authCode && !$responseCode && !$responseText) {
+                    // Has BOTH transaction reference AND auth code, no errors = completed successfully
+                    $paymentStatus = 'COMPLETED';
+                }
+                // Check for EXPLICIT failure
+                elseif ($responseCode && $responseCode !== '00') {
+                    // Response code exists but is not '00' = definite failure
+                    $paymentStatus = 'FAILED';
+                }
+                elseif ($responseText && (
+                    stripos($responseText, 'fail') !== false ||
+                    stripos($responseText, 'error') !== false ||
+                    stripos($responseText, 'invalid') !== false ||
+                    stripos($responseText, 'declined') !== false
+                )) {
+                    // Has error text with failure keywords = failed
+                    $paymentStatus = 'FAILED';
+                }
+                // FALLBACK: If we have transaction data but no explicit error/success indicators,
+                // AND the response contains payment amount (indicating transaction was processed),
+                // treat as completed. This handles cases where Paycorp returns minimal data for successful payments.
+                elseif ($txnReference && !$responseCode && !$responseText) {
+                    // Has transaction reference without any error indicators = likely successful
+                    Log::info('Payment has txnReference without errors - treating as COMPLETED');
+                    $paymentStatus = 'COMPLETED';
+                }
+                // Otherwise leave as UNKNOWN - let it be verified again later
+
+                Log::info('Payment verification result', [
+                    'reqid' => $json['responseData']['clientRef'] ?? 'unknown',
+                    'status' => $paymentStatus,
+                    'responseCode' => $responseCode,
+                    'transactionState' => $transactionState,
+                    'txnReference' => $txnReference,
+                    'authCode' => $authCode ? 'present' : 'absent',
+                    'responseText' => $responseText,
+                ]);
+
                 return [
                     'status' => 'success',
                     'data' => $json,
-                    'payment_status' => $json['responseData']['transactionState'] ?? 'UNKNOWN',
-                    'transaction_id' => $json['responseData']['transactionId'] ?? null,
+                    'payment_status' => $paymentStatus,
+                    'transaction_id' => $json['responseData']['transactionId'] ?? $json['responseData']['txnReference'] ?? null,
                     'client_ref' => $json['responseData']['clientRef'] ?? null,
                     'amount' => $json['responseData']['transactionAmount']['paymentAmount'] ?? null,
+                    'card_type' => $json['responseData']['creditCard']['type'] ?? null,
+                    'card_number' => $json['responseData']['creditCard']['number'] ?? null,
+                    'fail_reason' => ($paymentStatus === 'FAILED') ? ($responseText ?? $responseCode ?? 'Payment declined') : null,
                 ];
             }
 

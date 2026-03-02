@@ -22,3 +22,8 @@
 Homestead.json
 Homestead.yaml
 Thumbs.db
+
+# Debug files
+.read_log.php
+last_*.json
+responses.json
