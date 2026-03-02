@@ -307,13 +307,20 @@ const getStatusClass = (status) => {
 };
 
 // Compute chart data from props
-const chartData = computed(() => ({
-    completed: props.stats?.completed_transactions || 0,
-    pending: props.stats?.pending_transactions || 0,
-    processing: props.stats?.processing_transactions || 0,
-    failed: props.stats?.failed_transactions || 0,
-    total: props.stats?.total_transactions || 0
-}));
+const chartData = computed(() => {
+    const completed = props.stats?.completed_transactions || 0;
+    const pending = props.stats?.pending_transactions || 0;
+    const processing = props.stats?.processing_transactions || 0;
+    const failed = props.stats?.failed_transactions || 0;
+
+    return {
+        completed,
+        pending,
+        processing,
+        failed,
+        total: completed + pending + processing + failed
+    };
+});
 
 // Payment Status Donut Chart
 const statusChartOptions = computed(() => ({
