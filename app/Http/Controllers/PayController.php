@@ -40,8 +40,13 @@ class PayController extends Controller
             'program' => 'required|string|max:255',
             'nic_passport' => 'required|string|max:255',
             'reference' => 'nullable|string|max:255',
-            'email' => 'required|email',
-            'phone' => 'required|string',
+            'email' => 'required|email:rfc,dns',
+            'phone' => ['required', 'string', 'regex:/^(\+94|0)?[1-9]\d{8}$/'],
+        ], [
+            'email.email' => 'Please enter a valid email address',
+            'email.required' => 'Email address is required',
+            'phone.regex' => 'Please enter a valid Sri Lankan mobile number',
+            'phone.required' => 'Mobile number is required',
         ]);
 
         // Generate unique client reference
@@ -170,9 +175,9 @@ class PayController extends Controller
             'reqid' => $reqid,
             'current_status' => $transaction->status,
         ]);
-        
+
         $verification = $this->paycenter->verifyPayment($reqid, $transaction->currency);
-        
+
         // Update transaction based on verification
         $this->updateTransactionFromVerification($transaction, $verification);
         $transaction->refresh();
@@ -190,7 +195,7 @@ class PayController extends Controller
         $clientRef = $request->input('client_ref');
 
         // Find transaction
-        $transaction = $reqid 
+        $transaction = $reqid
             ? Transaction::where('reqid', $reqid)->first()
             : Transaction::where('client_ref', $clientRef)->first();
 
@@ -250,7 +255,7 @@ class PayController extends Controller
 
             // Extract responseCode from data for additional validation
             $responseCode = $verification['data']['responseData']['responseCode'] ?? null;
-            
+
             // Additional safety: if responseCode indicates failure, override status
             if ($responseCode && $responseCode !== '00' && in_array($paymentStatus, ['COMPLETED', 'SUCCESS', 'AUTHORIZED'])) {
                 Log::warning('Payment marked as completed but has error responseCode - treating as FAILED', [
@@ -268,7 +273,7 @@ class PayController extends Controller
                         'transaction_id' => $transaction->id,
                         'payment_status' => $paymentStatus,
                     ]);
-                    
+
                     $transaction->update([
                         'response_data' => $responseData,
                     ]);
