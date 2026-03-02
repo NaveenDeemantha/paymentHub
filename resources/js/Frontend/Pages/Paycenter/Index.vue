@@ -108,12 +108,18 @@
                              <div>
                                 <label class="input-label">Email Address</label>
                                 <input type="email" name="email" v-model="form.email"
-                                    class="input-field" placeholder="name@example.com" required>
+                                    @blur="validateEmail"
+                                    :class="['input-field', { 'input-error': errors.email }]" 
+                                    placeholder="name@example.com" required>
+                                <p v-if="errors.email" class="error-message">{{ errors.email }}</p>
                             </div>
                             <div>
                                 <label class="input-label">Mobile Number</label>
                                 <input type="tel" name="phone" v-model="form.phone"
-                                    class="input-field" placeholder="+94 7X XXX XXXX" required>
+                                    @blur="validatePhone"
+                                    :class="['input-field', { 'input-error': errors.phone }]"
+                                    placeholder="+94 7X XXX XXXX" required>
+                                <p v-if="errors.phone" class="error-message">{{ errors.phone }}</p>
                             </div>
                         </div>
 
@@ -152,9 +158,11 @@
 
                         <!-- Submit -->
                         <div class="submit-section">
-                            <button type="submit" class="submit-btn" :disabled="form.processing">
+                            <button type="submit" class="submit-btn" :disabled="form.processing" @click="validateForm">
                                 <span>Proceed to Secure Payment</span>
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" /></svg>
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                                </svg>
                             </button>
                         </div>
 
@@ -171,7 +179,7 @@
 </template>
 
 <script setup>
-import { Head, Link, useForm } from '@inertiajs/vue3'; // Assuming useForm is available or standard Ref
+import { Head, Link, useForm } from '@inertiajs/vue3';
 import { ref, onMounted } from 'vue';
 
 const form = useForm({
@@ -186,7 +194,71 @@ const form = useForm({
     phone: '',
 });
 
+const errors = ref({
+    email: '',
+    phone: '',
+});
+
 const csrfToken = ref('');
+
+// Validation functions
+const validateEmail = () => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    
+    if (!form.email) {
+        errors.value.email = 'Email address is required';
+        return false;
+    }
+    
+    if (!emailRegex.test(form.email)) {
+        errors.value.email = 'Please enter a valid email address';
+        return false;
+    }
+    
+    errors.value.email = '';
+    return true;
+};
+
+const validatePhone = () => {
+    // Remove all non-digit characters for validation
+    const digitsOnly = form.phone.replace(/\D/g, '');
+    
+    if (!form.phone) {
+        errors.value.phone = 'Mobile number is required';
+        return false;
+    }
+    
+    // Sri Lankan mobile numbers validation
+    // Supports formats: 0771234567, +94771234567, 771234567
+    const sriLankaRegex = /^(?:\+94|0)?[1-9]\d{8}$/;
+    
+    if (!sriLankaRegex.test(digitsOnly)) {
+        errors.value.phone = 'Please enter a valid Sri Lankan mobile number';
+        return false;
+    }
+    
+    // Check if it starts with valid mobile prefix (7X)
+    const normalizedNumber = digitsOnly.replace(/^(?:94|0)/, '');
+    if (!normalizedNumber.startsWith('7')) {
+        errors.value.phone = 'Mobile number should start with 7';
+        return false;
+    }
+    
+    errors.value.phone = '';
+    return true;
+};
+
+const validateForm = (event) => {
+    const emailValid = validateEmail();
+    const phoneValid = validatePhone();
+    
+    if (!emailValid || !phoneValid) {
+        event.preventDefault();
+        return false;
+    }
+    
+    return true;
+};
 
 onMounted(() => {
     csrfToken.value = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
@@ -613,6 +685,24 @@ onMounted(() => {
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
     background-color: #ffffff;
     transform: translateY(-1px);
+}
+
+.input-error {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+.input-error:focus {
+    border-color: #dc2626 !important;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+.error-message {
+    color: #dc2626;
+    font-size: 0.75rem;
+    margin-top: 0.375rem;
+    font-weight: 500;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .error-box {

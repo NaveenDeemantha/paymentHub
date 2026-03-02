@@ -42,6 +42,7 @@ Route::get('/', function () {
 Route::get('/pay', [PayController::class, 'index'])->name('pay.index');
 Route::post('/pay/initiate', [PayController::class, 'initiate'])->name('pay.initiate');
 Route::get('/pay/callback', [PayController::class, 'callback'])->name('pay.callback');
+Route::get('/pay/check-status', [PayController::class, 'checkStatus'])->name('pay.check-status');
 
 // Admin Authentication Routes
 require __DIR__ . '/auth.php';

@@ -2,45 +2,79 @@
     <Head title="Payment Status" />
 
     <div class="overlay-container">
-        
+
         <!-- Background Pattern -->
         <div class="bg-pattern"></div>
         <div class="bg-glow"></div>
 
         <!-- Receipt Card -->
         <div class="receipt-card">
-            
+
             <!-- Status Header -->
             <div class="status-section">
-                <div class="status-icon-wrapper" :class="success ? 'bg-success' : 'bg-failure'">
+                <div class="status-icon-wrapper" :class="success ? 'bg-success' : isPending ? 'bg-pending' : 'bg-failure'">
                     <svg v-if="success" class="status-icon text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                    <svg v-else-if="isPending" class="status-icon text-pending animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                     <svg v-else class="status-icon text-failure" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
                 </div>
 
                 <h1 class="status-title">
-                    {{ success ? 'Payment Successful' : 'Payment Failed' }}
+                    {{ isPending ? 'Payment Processing' : (success ? 'Payment Successful' : 'Payment Failed') }}
                 </h1>
                 <p class="status-message">
-                    {{ success 
-                        ? 'Thank you! Your transaction has been processed successfully.' 
-                        : 'We could not process your transaction. Please try again.' 
-                    }}
+                    <span v-if="isPending">
+                        {{ message }} Refreshing in {{ refreshCounter }} seconds...
+                    </span>
+                    <span v-else>
+                        {{ message || (success
+                            ? 'Thank you! Your transaction has been processed successfully.'
+                            : 'We could not process your transaction. Please try again.')
+                        }}
+                    </span>
                 </p>
             </div>
 
             <!-- Receipt Details -->
-            <div class="details-section">
-                <div class="detail-row">
-                    <span class="detail-label">Reference ID</span>
-                    <span class="detail-value mono">{{ order_id || 'N/A' }}</span>
+            <div v-if="transaction" class="details-section">
+                <!-- If Failed, typically no transaction ID, but we show Reference ID -->
+                <div class="detail-row" v-if="transaction.transaction_id">
+                    <span class="detail-label">Transaction ID</span>
+                    <span class="detail-value mono">{{ transaction.transaction_id }}</span>
                 </div>
+                <div class="detail-row" v-if="!transaction.transaction_id">
+                    <span class="detail-label">Reference ID</span>
+                    <span class="detail-value mono">{{ transaction.client_ref || 'N/A' }}</span>
+                </div>
+
+                <div class="detail-row" v-if="transaction.status">
+                    <span class="detail-label">Status</span>
+                    <span class="detail-value" :class="success ? 'text-success' : 'text-failure'">
+                        {{ transaction.status }}
+                    </span>
+                </div>
+
+                <div class="detail-row" v-if="transaction.card_type">
+                    <span class="detail-label">Payment Method</span>
+                    <span class="detail-value">
+                        {{ transaction.card_type }}
+                        <span v-if="transaction.card_number" class="mono text-gray-500">
+                            ({{ transaction.card_number.includes('*') ? transaction.card_number : '****' + transaction.card_number.slice(-4) }})
+                        </span>
+                    </span>
+                </div>
+
+                <div class="detail-row" v-if="!success && transaction.fail_reason">
+                    <span class="detail-label text-failure">Failure Reason</span>
+                    <span class="detail-value text-failure">{{ transaction.fail_reason }}</span>
+                </div>
+
                 <div class="detail-row">
                     <span class="detail-label">Date</span>
                     <span class="detail-value">{{ new Date().toLocaleDateString() }}</span>
                 </div>
                 <div class="detail-row">
-                    <span class="detail-label">Amount Paid</span>
-                    <span class="detail-total">{{ currency }} {{ amount }}</span>
+                    <span class="detail-label">Amount</span>
+                    <span class="detail-total">{{ transaction.currency }} {{ Number(transaction.amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
                 </div>
             </div>
 
@@ -64,12 +98,30 @@
 
 <script setup>
 import { Head, Link } from '@inertiajs/vue3';
+import { onMounted, ref } from 'vue';
 
-defineProps({
+const props = defineProps({
     success: Boolean,
-    order_id: String,
-    amount: String,
-    currency: String,
+    message: String,
+    transaction: Object,
+    isPending: Boolean,
+});
+
+// Auto-refresh if payment is pending
+const refreshCounter = ref(5);
+
+onMounted(() => {
+    if (props.isPending) {
+        const interval = setInterval(() => {
+            refreshCounter.value--;
+            if (refreshCounter.value <= 0) {
+                window.location.reload();
+            }
+        }, 1000);
+
+        // Cleanup
+        return () => clearInterval(interval);
+    }
 });
 </script>
 
@@ -154,6 +206,7 @@ defineProps({
 
 .bg-success { background-color: #dcfce7; }
 .bg-failure { background-color: #fee2e2; }
+.bg-pending { background-color: #fef3c7; }
 
 .status-icon {
     width: 2.5rem;
@@ -162,6 +215,7 @@ defineProps({
 
 .text-success { color: #16a34a; }
 .text-failure { color: #dc2626; }
+.text-pending { color: #d97706; }
 
 .status-title {
     font-family: 'Merriweather', serif;
@@ -286,29 +340,38 @@ defineProps({
 }
 
 @keyframes popIn {
-    from { 
-        opacity: 0; 
-        transform: scale(0.9) translateY(10px); 
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(10px);
     }
-    to { 
-        opacity: 1; 
-        transform: scale(1) translateY(0); 
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
     }
 }
 
 @keyframes fadeInUp {
-    from { 
-        opacity: 0; 
-        transform: translateY(10px); 
+    from {
+        opacity: 0;
+        transform: translateY(10px);
     }
-    to { 
-        opacity: 1; 
-        transform: translateY(0); 
+    to {
+        opacity: 1;
+        transform: translateY(0);
     }
 }
 
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
 }
 </style>
