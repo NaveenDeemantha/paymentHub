@@ -147,94 +147,268 @@ class PayController extends Controller
             ]);
         }
 
-        // Verify payment status with Paycenter
-        $verification = $this->paycenter->verifyPayment($reqid, $transaction->currency);
+        // Skip verification if transaction is already in a final state
+        // Completed: must have transaction_id to prove it was properly verified
+        // Failed: preserve the original failure reason from first verification
+        if ($transaction->status === 'completed' && $transaction->transaction_id) {
+            Log::info('Transaction already verified and completed, skipping re-verification', [
+                'reqid' => $reqid,
+                'transaction_id' => $transaction->transaction_id,
+            ]);
+            return $this->showResult($transaction);
+        }
 
+        if ($transaction->status === 'failed') {
+            Log::info('Transaction already failed, skipping re-verification to preserve failure reason', [
+                'reqid' => $reqid,
+            ]);
+            return $this->showResult($transaction);
+        }
+
+        // Verify payment status with Paycenter (allow re-verification for processing/pending only)
+        Log::info('Verifying payment with Paycorp', [
+            'reqid' => $reqid,
+            'current_status' => $transaction->status,
+        ]);
+        
+        $verification = $this->paycenter->verifyPayment($reqid, $transaction->currency);
+        
+        // Update transaction based on verification
+        $this->updateTransactionFromVerification($transaction, $verification);
+        $transaction->refresh();
+
+        // Show result page (even if still processing, will show refresh message)
+        return $this->showResult($transaction);
+    }
+
+    /**
+     * Check payment status - used by frontend polling
+     */
+    public function checkStatus(Request $request)
+    {
+        $reqid = $request->input('reqid');
+        $clientRef = $request->input('client_ref');
+
+        // Find transaction
+        $transaction = $reqid 
+            ? Transaction::where('reqid', $reqid)->first()
+            : Transaction::where('client_ref', $clientRef)->first();
+
+        if (!$transaction) {
+            return response()->json([
+                'status' => 'not_found',
+                'message' => 'Transaction not found'
+            ], 404);
+        }
+
+        // If still processing, verify with Paycorp
+        if ($transaction->status === 'processing') {
+            $verification = $this->paycenter->verifyPayment($transaction->reqid, $transaction->currency);
+            $this->updateTransactionFromVerification($transaction, $verification);
+            $transaction->refresh();
+        }
+
+        // Return current status
+        return response()->json([
+            'status' => $transaction->status,
+            'payment_state' => $transaction->payment_state,
+            'transaction_id' => $transaction->transaction_id,
+            'should_poll' => $transaction->status === 'processing',
+        ]);
+    }
+
+    /**
+     * Update transaction from verification result
+     */
+    private function updateTransactionFromVerification(Transaction $transaction, array $verification)
+    {
         if ($verification['status'] === 'success') {
             $paymentStatus = $verification['payment_status'] ?? 'UNKNOWN';
             $transactionId = $verification['transaction_id'];
+            $failReason = $verification['fail_reason'] ?? null;
 
-            // Update transaction based on payment status
+            // SAFETY CHECK: Never mark as COMPLETED if there's a failure reason
+            if ($failReason && in_array($paymentStatus, ['COMPLETED', 'SUCCESS', 'AUTHORIZED'])) {
+                Log::warning('Payment marked as completed but has failure reason - treating as FAILED', [
+                    'transaction_id' => $transaction->id,
+                    'payment_status' => $paymentStatus,
+                    'fail_reason' => $failReason,
+                ]);
+                $paymentStatus = 'FAILED';
+            }
+
+            // Prepare response data with all relevant fields
+            $responseData = [
+                'data' => $verification['data'] ?? [],
+                'card_type' => $verification['card_type'] ?? null,
+                'card_number' => $verification['card_number'] ?? null,
+                'amount' => $verification['amount'] ?? null,
+                'fail_reason' => $failReason,
+                'last_checked' => now()->toIso8601String(),
+                'payment_status_from_gateway' => $paymentStatus,
+            ];
+
+            // Extract responseCode from data for additional validation
+            $responseCode = $verification['data']['responseData']['responseCode'] ?? null;
+            
+            // Additional safety: if responseCode indicates failure, override status
+            if ($responseCode && $responseCode !== '00' && in_array($paymentStatus, ['COMPLETED', 'SUCCESS', 'AUTHORIZED'])) {
+                Log::warning('Payment marked as completed but has error responseCode - treating as FAILED', [
+                    'transaction_id' => $transaction->id,
+                    'payment_status' => $paymentStatus,
+                    'responseCode' => $responseCode,
+                ]);
+                $paymentStatus = 'FAILED';
+            }
+
             if (in_array($paymentStatus, ['COMPLETED', 'SUCCESS', 'AUTHORIZED'])) {
+                // CRITICAL SAFETY: Never mark as completed without a gateway transaction ID
+                if (!$transactionId) {
+                    Log::warning('Payment marked as completed but missing gateway transaction ID - keeping as processing', [
+                        'transaction_id' => $transaction->id,
+                        'payment_status' => $paymentStatus,
+                    ]);
+                    
+                    $transaction->update([
+                        'response_data' => $responseData,
+                    ]);
+                    return;
+                }
+
+                Log::info('Marking transaction as COMPLETED', [
+                    'transaction_id' => $transaction->id,
+                    'gateway_transaction_id' => $transactionId,
+                    'payment_status' => $paymentStatus,
+                ]);
+
                 $transaction->update([
                     'status' => 'completed',
                     'payment_state' => $paymentStatus,
                     'transaction_id' => $transactionId,
                     'completed_at' => now(),
-                    'response_data' => $verification['data'],
+                    'response_data' => $responseData,
                 ]);
 
-                // Sending Success Email
+                // Send success email
                 try {
                     if ($transaction->customer_email) {
-                        \Illuminate\Support\Facades\Mail::to($transaction->customer_email)->send(new \App\Mail\PaymentStatusMail($transaction));
+                        \Illuminate\Support\Facades\Mail::to($transaction->customer_email)
+                            ->send(new \App\Mail\PaymentStatusMail($transaction));
                     }
                 } catch (\Exception $e) {
                     Log::error('Failed to send payment success email', ['error' => $e->getMessage()]);
                 }
-
-                return Inertia::render('Frontend/Pages/Paycenter/Result', [
-                    'success' => true,
-                    'message' => 'Payment completed successfully!',
-                    'transaction' => [
-                        'client_ref' => $transaction->client_ref,
-                        'transaction_id' => $transactionId,
-                        'amount' => $transaction->amount,
-                        'currency' => $transaction->currency,
-                        'status' => $paymentStatus,
-                    ],
-                ]);
             } elseif (in_array($paymentStatus, ['FAILED', 'DECLINED', 'CANCELLED'])) {
+                Log::info('Marking transaction as FAILED', [
+                    'transaction_id' => $transaction->id,
+                    'payment_status' => $paymentStatus,
+                    'fail_reason' => $failReason,
+                ]);
+
                 $transaction->update([
                     'status' => 'failed',
                     'payment_state' => $paymentStatus,
-                    'response_data' => $verification['data'],
+                    'response_data' => $responseData,
                 ]);
 
-                // Sending Failure Email
+                // Send failure email
                 try {
                     if ($transaction->customer_email) {
-                        \Illuminate\Support\Facades\Mail::to($transaction->customer_email)->send(new \App\Mail\PaymentStatusMail($transaction));
+                        \Illuminate\Support\Facades\Mail::to($transaction->customer_email)
+                            ->send(new \App\Mail\PaymentStatusMail($transaction));
                     }
                 } catch (\Exception $e) {
                     Log::error('Failed to send payment failure email', ['error' => $e->getMessage()]);
                 }
-
-                return Inertia::render('Frontend/Pages/Paycenter/Result', [
-                    'success' => false,
-                    'message' => 'Payment was ' . strtolower($paymentStatus),
-                    'transaction' => [
-                        'client_ref' => $transaction->client_ref,
-                        'status' => $paymentStatus,
-                    ],
-                ]);
             } else {
-                // Payment is still pending or in unknown state
-                $transaction->update([
-                    'payment_state' => $paymentStatus,
-                    'response_data' => $verification['data'],
+                // Payment still UNKNOWN/processing - update response data but keep status as processing
+                Log::info('Payment status UNKNOWN - keeping as processing', [
+                    'transaction_id' => $transaction->id,
+                    'payment_status' => $paymentStatus,
                 ]);
 
-                return Inertia::render('Frontend/Pages/Paycenter/Result', [
-                    'success' => false,
-                    'message' => 'Payment status: ' . $paymentStatus,
-                    'transaction' => [
-                        'client_ref' => $transaction->client_ref,
-                        'status' => $paymentStatus,
-                    ],
+                $transaction->update([
+                    'response_data' => $responseData,
                 ]);
             }
         }
+    }
 
-        // Verification failed
-        Log::error('Payment verification failed', [
-            'reqid' => $reqid,
-            'verification' => $verification
-        ]);
+    /**
+     * Show result page based on transaction
+     */
+    private function showResult(Transaction $transaction)
+    {
+        // Extract card info and fail reason from response_data if available
+        $responseData = $transaction->response_data ?? [];
+        $cardType = null;
+        $cardNumber = null;
+        $failReason = null;
 
+        if (isset($responseData['card_type'])) {
+            $cardType = $responseData['card_type'];
+        } elseif (isset($responseData['data']['responseData']['creditCard']['type'])) {
+            $cardType = $responseData['data']['responseData']['creditCard']['type'];
+        }
+
+        if (isset($responseData['card_number'])) {
+            $cardNumber = $responseData['card_number'];
+        } elseif (isset($responseData['data']['responseData']['creditCard']['number'])) {
+            $cardNumber = $responseData['data']['responseData']['creditCard']['number'];
+        }
+
+        if (isset($responseData['fail_reason'])) {
+            $failReason = $responseData['fail_reason'];
+        } elseif (isset($responseData['data']['responseData']['responseText'])) {
+            $failReason = $responseData['data']['responseData']['responseText'];
+        }
+
+        if ($transaction->status === 'completed') {
+            return Inertia::render('Frontend/Pages/Paycenter/Result', [
+                'success' => true,
+                'message' => 'Payment completed successfully!',
+                'transaction' => [
+                    'client_ref' => $transaction->client_ref,
+                    'transaction_id' => $transaction->transaction_id,
+                    'amount' => $transaction->amount,
+                    'currency' => $transaction->currency,
+                    'status' => $transaction->payment_state ?? 'COMPLETED',
+                    'card_type' => $cardType,
+                    'card_number' => $cardNumber,
+                ],
+            ]);
+        }
+
+        // If still processing, show pending message with refresh instruction
+        if ($transaction->status === 'processing') {
+            return Inertia::render('Frontend/Pages/Paycenter/Result', [
+                'success' => false,
+                'message' => 'Payment is being processed. Please refresh this page in a few seconds to check the status.',
+                'isPending' => true,
+                'transaction' => [
+                    'client_ref' => $transaction->client_ref,
+                    'amount' => $transaction->amount,
+                    'currency' => $transaction->currency,
+                    'status' => 'PROCESSING',
+                    'card_type' => $cardType,
+                    'card_number' => $cardNumber,
+                ],
+            ]);
+        }
+
+        // Failed payment
         return Inertia::render('Frontend/Pages/Paycenter/Result', [
             'success' => false,
-            'message' => 'Failed to verify payment status',
+            'message' => 'Payment failed',
+            'transaction' => [
+                'client_ref' => $transaction->client_ref,
+                'amount' => $transaction->amount,
+                'currency' => $transaction->currency,
+                'status' => $transaction->payment_state ?? 'FAILED',
+                'card_type' => $cardType,
+                'card_number' => $cardNumber,
+                'fail_reason' => $failReason,
+            ],
         ]);
     }
 
