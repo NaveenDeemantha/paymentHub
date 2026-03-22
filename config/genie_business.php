@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'enabled' => env('GENIE_BUSINESS_ENABLED', false),
+    'base_url' => env('GENIE_BUSINESS_BASE_URL'),
+    'client_id' => env('GENIE_BUSINESS_CLIENT_ID'),
+    'client_secret' => env('GENIE_BUSINESS_CLIENT_SECRET'),
+    'api_key' => env('GENIE_BUSINESS_API_KEY'),
+    'api_key_header' => env('GENIE_BUSINESS_API_KEY_HEADER', 'Authorization'),
+    'api_key_prefix' => env('GENIE_BUSINESS_API_KEY_PREFIX', 'Bearer'),
+    'app_id' => env('GENIE_BUSINESS_APP_ID'),
+    'app_id_header' => env('GENIE_BUSINESS_APP_ID_HEADER'),
+    'merchant_id' => env('GENIE_BUSINESS_MERCHANT_ID'),
+    'webhook_secret' => env('GENIE_BUSINESS_WEBHOOK_SECRET'),
+    'webhook_signature_header' => env('GENIE_BUSINESS_WEBHOOK_SIGNATURE_HEADER', 'X-Genie-Signature'),
+    'token_url' => env('GENIE_BUSINESS_TOKEN_URL'),
+    'token_grant_type' => env('GENIE_BUSINESS_TOKEN_GRANT_TYPE', 'client_credentials'),
+    'token_scope' => env('GENIE_BUSINESS_TOKEN_SCOPE'),
+    'token_as_form' => env('GENIE_BUSINESS_TOKEN_AS_FORM', true),
+    'create_transaction_path' => env('GENIE_BUSINESS_CREATE_TRANSACTION_PATH', '/transactions'),
+    'status_path' => env('GENIE_BUSINESS_STATUS_PATH', '/transactions/{id}'),
+    'status_method' => env('GENIE_BUSINESS_STATUS_METHOD', 'GET'),
+    'timeout_seconds' => (int) env('GENIE_BUSINESS_TIMEOUT_SECONDS', 30),
+    'amount_in_minor_units' => env('GENIE_BUSINESS_AMOUNT_IN_MINOR_UNITS', false),
+    'success_url' => env('GENIE_BUSINESS_SUCCESS_URL'),
+    'cancel_url' => env('GENIE_BUSINESS_CANCEL_URL'),
+    'docs_url' => env('GENIE_BUSINESS_DOCS_URL', 'https://geniebusiness.stoplight.io/docs/genie-business-connect/5ux5yx6sfj6z8-change-logs'),
+];

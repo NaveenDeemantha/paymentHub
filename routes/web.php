@@ -43,6 +43,11 @@ Route::get('/pay', [PayController::class, 'index'])->name('pay.index');
 Route::post('/pay/initiate', [PayController::class, 'initiate'])->name('pay.initiate');
 Route::get('/pay/callback', [PayController::class, 'callback'])->name('pay.callback');
 Route::get('/pay/check-status', [PayController::class, 'checkStatus'])->name('pay.check-status');
+Route::get('/genie-business', 'App\\Http\\Controllers\\GenieBusinessController@index')->name('genie-business.index');
+Route::post('/genie-business/initiate', 'App\\Http\\Controllers\\GenieBusinessController@initiate')->name('genie-business.initiate');
+Route::get('/genie-business/callback', 'App\\Http\\Controllers\\GenieBusinessController@callback')->name('genie-business.callback');
+Route::get('/genie-business/check-status', 'App\\Http\\Controllers\\GenieBusinessController@checkStatus')->name('genie-business.check-status');
+Route::post('/genie-business/webhook', 'App\\Http\\Controllers\\GenieBusinessController@webhook')->name('genie-business.webhook');
 
 // Admin Authentication Routes
 require __DIR__ . '/auth.php';

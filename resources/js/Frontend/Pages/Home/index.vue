@@ -9,9 +9,9 @@
                 <!-- Brand Identity -->
                 <div class="brand-header">
                      <div class="brand-logo-wrapper">
-                        <div class="brand-logo-icon">
+                        <!-- <div class="brand-logo-icon">
                             <img :src="'/images/' + 'winfield-logo.png'" alt="Winfield Logo" class="logo-image">
-                        </div>
+                        </div> -->
                         <span class="brand-name">PayCenter</span>
                     </div>
 
@@ -19,9 +19,9 @@
                         Secure <br>
                         <span class="highlight-gold">Payments</span>
                     </h1>
-                    <p class="hero-subtitle">
+                    <!-- <p class="hero-subtitle">
                         The official payment gateway for <br> <span class="text-white-soft">Winfield School of Business</span>.
-                    </p>
+                    </p> -->
                 </div>
 
                 <!-- Footer / Trust Badges -->
@@ -71,6 +71,26 @@
                         </div>
 
                         <div class="card-action-btn">
+                            Pay Now
+                        </div>
+                    </Link>
+
+                    <!-- DIALOG GENIE BUSINESS CARD -->
+                    <Link :href="route('genie-business.index')" class="payment-card group active-card preview-card">
+                        <div class="status-badge online">
+                            <span class="status-dot animate-pulse"></span> ONLINE
+                        </div>
+
+                        <div class="card-logo-wrapper">
+                             <img :src="'/images/' + 'genie-business.png'" alt="Dialog Genie Business" class="card-logo">
+                        </div>
+
+                        <div class="card-content">
+                            <h3 class="card-title">Dialog Genie Business</h3>
+                            <p class="card-description">Proceed through the dedicated Genie Business checkout flow.</p>
+                        </div>
+
+                        <div class="card-action-btn preview-btn">
                             Pay Now
                         </div>
                     </Link>
@@ -509,6 +529,10 @@ defineProps({
     animation-delay: 0.7s;
 }
 
+.payment-card:nth-child(3) {
+    animation-delay: 0.9s;
+}
+
 @media (min-width: 640px) {
     .payment-card {
         padding: 1.5rem;
@@ -562,6 +586,11 @@ defineProps({
 .status-badge.soon {
     background-color: #e2e8f0;
     color: #64748b;
+}
+
+.status-badge.preview {
+    background-color: #eff6ff;
+    color: #1d4ed8;
 }
 
 .status-dot {
@@ -643,6 +672,20 @@ defineProps({
 
 .active-card:hover .card-action-btn {
     background-color: #16a34a;
+}
+
+.preview-card:hover {
+    border-color: #2563eb;
+    box-shadow: 0 20px 25px -5px rgba(37, 99, 235, 0.08), 0 8px 10px -6px rgba(0, 0, 0, 0.01);
+}
+
+.preview-card:hover .card-action-btn {
+    background-color: #2563eb;
+}
+
+.preview-btn {
+    background-color: #0f172a;
+    color: #ffffff;
 }
 
 .disabled-card .card-action-btn {
